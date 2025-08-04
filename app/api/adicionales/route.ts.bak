@@ -1,0 +1,374 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { z, ZodError } from 'zod';
+import { createClient } from '../../../utils/supabase/server';
+import { logError, logInfo } from '../../../utils/error/logger';
+import { 
+  getAdicionalesFiltrados, 
+  crearAdicional, 
+  actualizarAdicional, 
+  eliminarAdicional 
+} from './controllers/adicionalController';
+
+/**
+ * @swagger
+ * /api/adicionales:
+ *   get:
+ *     tags:
+ *       - Adicionales
+ *     summary: Obtener lista de adicionales
+ *     description: Obtiene una lista de adicionales, opcionalmente filtrados por actividad
+ *     parameters:
+ *       - name: actividad_id
+ *         in: query
+ *         description: ID de la actividad (opcional)
+ *         schema:
+ *           type: integer
+ *       - name: id
+ *         in: query
+ *         description: ID del adicional (opcional)
+ *         schema:
+ *           type: integer
+ *       - name: aplica_a_todas
+ *         in: query
+ *         description: Filtra por adicionales globales (opcional)
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Operación exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: "Adicionales obtenidos exitosamente"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       descripcion:
+ *                         type: string
+ *                       precio:
+ *                         type: number
+ *                       moneda:
+ *                         type: string
+ *                       actividad_ids:
+ *                         type: array
+ *                         items:
+ *                           type: integer
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+// GET: Obtener la lista de adicionales
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const idParam = searchParams.get('id');
+    const actividadIdParam = searchParams.get('actividad_id');
+    const aplicaTodasParam = searchParams.get('aplica_a_todas');
+    
+    const filtros: any = {};
+    
+    // Convertir parámetros si están presentes
+    if (idParam) {
+      filtros.id = parseInt(idParam);
+    }
+    
+    if (actividadIdParam) {
+      filtros.actividad_id = parseInt(actividadIdParam);
+    }
+    
+    if (aplicaTodasParam !== null) {
+      filtros.aplica_a_todas = aplicaTodasParam === 'true';
+    }
+    
+    // Utilizar el controlador para obtener los adicionales filtrados
+    const resultado = await getAdicionalesFiltrados(filtros);
+    
+    logInfo(`Adicionales obtenidos exitosamente`, { endpoint: '/api/adicionales/GET' });
+    return NextResponse.json(resultado);
+  } catch (err: any) {
+    const errorDetail = {
+      message: err.message || 'Error al obtener adicionales',
+      name: err.name,
+      stack: err instanceof Error ? err.stack : undefined,
+    };
+    console.error('Error detallado:', JSON.stringify(errorDetail));
+    
+    return NextResponse.json({
+      code: err.code || 500,
+      message: err.message || 'Error al obtener adicionales'
+    }, { status: err.code || 500 });
+  }
+}
+
+/**
+ * @swagger
+ * /api/adicionales:
+ *   post:
+ *     tags:
+ *       - Adicionales
+ *     summary: Crear un nuevo adicional
+ *     description: Crea un nuevo adicional con los datos proporcionados
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               descripcion:
+ *                 type: string
+ *                 description: Descripción del adicional
+ *               precio:
+ *                 type: number
+ *                 description: Precio del adicional
+ *               moneda:
+ *                 type: string
+ *                 description: Moneda del precio (default USD)
+ *               aplica_a_todas:
+ *                 type: boolean
+ *                 description: Si el adicional aplica a todas las actividades (global)
+ *               actividad_ids:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: IDs de actividades a las que aplica este adicional
+ *             required:
+ *               - descripcion
+ *               - precio
+ *     responses:
+ *       201:
+ *         description: Adicional creado exitosamente
+ *       400:
+ *         description: Datos de entrada inválidos
+ *       500:
+ *         description: Error interno del servidor
+ */
+// Esquema de validación para crear un adicional
+const adicionalSchema = z.object({
+  descripcion: z.string().min(1, 'La descripción es requerida'),
+  precio: z.number().positive('El precio debe ser positivo'),
+  moneda: z.string().optional().default('USD'),
+  aplica_a_todas: z.boolean().optional().default(false),
+  actividad_ids: z.array(z.number()).optional().default([])
+});
+
+// POST: Crear un nuevo adicional
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const data = adicionalSchema.parse(body);
+    
+    // Verificar validación adicional: si no aplica a todas, debe tener al menos una actividad
+    if (!data.aplica_a_todas && (!data.actividad_ids || data.actividad_ids.length === 0)) {
+      return NextResponse.json({
+        code: 400,
+        message: 'Si el adicional no es global, debe tener al menos una actividad asociada'
+      }, { status: 400 });
+    }
+    
+    // Utilizar el controlador para crear el adicional
+    const resultado = await crearAdicional(data);
+    
+    return NextResponse.json(resultado, { status: 201 });
+  } catch (err: any) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({
+        code: 400,
+        message: 'Datos de entrada inválidos',
+        errors: err.errors
+      }, { status: 400 });
+    }
+    
+    logError({
+      message: 'Error al crear adicional',
+      error: err,
+      endpoint: '/api/adicionales/POST'
+    });
+    
+    return NextResponse.json({
+      code: err.code || 500,
+      message: err.message || 'Error al crear adicional'
+    }, { status: err.code || 500 });
+  }
+}
+
+/**
+ * @swagger
+ * /api/adicionales/{id}:
+ *   put:
+ *     tags:
+ *       - Adicionales
+ *     summary: Modificar un adicional existente
+ *     description: Actualiza un adicional existente y sus relaciones con actividades
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del adicional a modificar
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               descripcion:
+ *                 type: string
+ *               precio:
+ *                 type: number
+ *               moneda:
+ *                 type: string
+ *               aplica_a_todas:
+ *                 type: boolean
+ *               actividad_ids:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *     responses:
+ *       200:
+ *         description: Adicional modificado exitosamente
+ *       400:
+ *         description: Datos inválidos
+ *       404:
+ *         description: Adicional no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+// Esquema de validación para actualizar un adicional
+const adicionalUpdateSchema = z.object({
+  descripcion: z.string().min(1, 'La descripción es requerida').optional(),
+  precio: z.number().positive('El precio debe ser positivo').optional(),
+  moneda: z.string().optional(),
+  aplica_a_todas: z.boolean().optional(),
+  actividad_ids: z.array(z.number()).optional()
+});
+
+// PUT: Modificar un adicional existente
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const id = parseInt(params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({
+        code: 400,
+        message: 'ID de adicional inválido'
+      }, { status: 400 });
+    }
+    
+    const body = await request.json();
+    const data = adicionalUpdateSchema.parse(body);
+    
+    // Verificar validación adicional: si no aplica a todas y se proporcionaron ids, debe tener al menos una actividad
+    if (data.aplica_a_todas === false && data.actividad_ids && data.actividad_ids.length === 0) {
+      return NextResponse.json({
+        code: 400,
+        message: 'Si el adicional no es global, debe tener al menos una actividad asociada'
+      }, { status: 400 });
+    }
+    
+    // Utilizar el controlador para actualizar el adicional
+    const resultado = await actualizarAdicional(id, data);
+    
+    return NextResponse.json(resultado);
+  } catch (err: any) {
+    if (err instanceof ZodError) {
+      return NextResponse.json({
+        code: 400,
+        message: 'Datos de entrada inválidos',
+        errors: err.errors
+      }, { status: 400 });
+    }
+    
+    if (err.message === 'Adicional no encontrado') {
+      return NextResponse.json({
+        code: 404,
+        message: 'Adicional no encontrado'
+      }, { status: 404 });
+    }
+    
+    logError({
+      message: 'Error al actualizar adicional',
+      error: err,
+      endpoint: '/api/adicionales/PUT'
+    });
+    
+    return NextResponse.json({
+      code: err.code || 500,
+      message: err.message || 'Error al actualizar adicional'
+    }, { status: err.code || 500 });
+  }
+}
+
+/**
+ * @swagger
+ * /api/adicionales/{id}:
+ *   delete:
+ *     tags:
+ *       - Adicionales
+ *     summary: Eliminar un adicional (soft delete)
+ *     description: Marca un adicional como eliminado (soft delete) y elimina sus relaciones con actividades
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del adicional a eliminar
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Adicional eliminado exitosamente
+ *       404:
+ *         description: Adicional no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+// DELETE: Eliminar un adicional
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const id = parseInt(params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({
+        code: 400,
+        message: 'ID de adicional inválido'
+      }, { status: 400 });
+    }
+    
+    // Utilizar el controlador para eliminar el adicional
+    const resultado = await eliminarAdicional(id);
+    
+    return NextResponse.json(resultado);
+  } catch (err: any) {
+    if (err.message === 'Adicional no encontrado') {
+      return NextResponse.json({
+        code: 404,
+        message: 'Adicional no encontrado'
+      }, { status: 404 });
+    }
+    
+    logError({
+      message: 'Error al eliminar adicional',
+      error: err,
+      endpoint: '/api/adicionales/DELETE'
+    });
+    
+    return NextResponse.json({
+      code: err.code || 500,
+      message: err.message || 'Error al eliminar adicional'
+    }, { status: err.code || 500 });
+  }
+}

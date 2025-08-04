@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ejemplo de Integración Flora+ - Agencia de Turismo</title>
+
+    <!-- Incluir el script de Flora+ -->
+    <script src="/api/flora-integration.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #f47920 0%, #e06a1a 100%);
+        color: white;
+        text-align: center;
+        padding: 40px 20px;
+        margin-bottom: 30px;
+        border-radius: 10px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .tour-section {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .tour-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+      }
+
+      .tour-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .tour-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .tour-image {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(45deg, #f47920, #e06a1a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+
+      .tour-content {
+        padding: 20px;
+      }
+
+      .tour-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .tour-description {
+        color: #666;
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+
+      .tour-price {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #f47920;
+        margin-bottom: 15px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .flora-button {
+        background-color: #f47920;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s ease;
+      }
+
+      .flora-button:hover {
+        background-color: #e06a1a;
+      }
+
+      .flora-button.secondary {
+        background-color: #6c757d;
+      }
+
+      .flora-button.secondary:hover {
+        background-color: #5a6268;
+      }
+
+      .flora-button.small {
+        padding: 8px 16px;
+        font-size: 12px;
+      }
+
+      .flora-button.large {
+        padding: 16px 32px;
+        font-size: 16px;
+      }
+
+      .demo-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 30px;
+      }
+
+      .demo-section h3 {
+        color: #f47920;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+      }
+
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+
+      .demo-item {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #f47920;
+      }
+
+      .demo-item h4 {
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .demo-item p {
+        color: #666;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+      }
+
+      .footer {
+        background: #333;
+        color: white;
+        text-align: center;
+        padding: 30px 20px;
+        border-radius: 10px;
+      }
+
+      .footer h3 {
+        margin-bottom: 15px;
+      }
+
+      .footer p {
+        opacity: 0.8;
+        margin-bottom: 20px;
+      }
+
+      .language-toggle {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .language-toggle button {
+        background: #f47920;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        margin: 0 5px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .language-toggle button.active {
+        background: #e06a1a;
+      }
+
+      @media (max-width: 768px) {
+        .tour-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .demo-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .button-group {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1>🏖️ Agencia de Turismo Ejemplo</h1>
+        <p>Descubre las mejores experiencias turísticas con Flora+</p>
+      </div>
+
+      <!-- Selector de Idioma -->
+      <div class="language-toggle">
+        <button onclick="setLanguage('es')" class="active" id="btn-es">
+          Español
+        </button>
+        <button onclick="setLanguage('en')" id="btn-en">English</button>
+      </div>
+
+      <!-- Sección de Tours -->
+      <div class="tour-section" on>
+        <h2>🎯 Nuestros Tours Destacados</h2>
+        <p>
+          Explora nuestras actividades más populares y reserva directamente
+          desde aquí.
+        </p>
+
+        <div class="tour-grid">
+          <!-- Tour 1 -->
+          <div class="tour-card">
+            <div class="tour-image">🏔️ Tour Montaña</div>
+            <div class="tour-content">
+              <h3 class="tour-title">Tour por la Montaña</h3>
+              <p class="tour-description">
+                Disfruta de las mejores vistas panorámicas en nuestra excursión
+                por la montaña. Incluye guía experto y equipamiento de
+                seguridad.
+              </p>
+              <div class="tour-price">Desde $89 USD</div>
+              <div class="button-group">
+                <!-- Opción 1: Botón con script Flora+ -->
+                <button
+                  data-flora="activity"
+                  data-activity-id="1"
+                  data-language="es"
+                  class="flora-button"
+                >
+                  🎫 Reservar Ahora
+                </button>
+
+                <!-- Opción 2: Botón con función directa -->
+                <button
+                  onclick="Flora.openActivity(1, currentLanguage)"
+                  class="flora-button secondary"
+                >
+                  🔍 Ver Detalles
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tour 2 -->
+          <div class="tour-card">
+            <div class="tour-image">🏖️ Tour Playa</div>
+            <div class="tour-content">
+              <h3 class="tour-title">Tour por la Playa</h3>
+              <p class="tour-description">
+                Relájate en las mejores playas con nuestro tour exclusivo.
+                Snorkel, kayak y almuerzo incluido.
+              </p>
+              <div class="tour-price">Desde $75 USD</div>
+              <div class="button-group">
+                <button
+                  data-flora="activity"
+                  data-activity-id="456"
+                  data-language="es"
+                  class="flora-button"
+                >
+                  🎫 Reservar Ahora
+                </button>
+
+                <button
+                  onclick="Flora.openActivity(456, currentLanguage)"
+                  class="flora-button secondary"
+                >
+                  🔍 Ver Detalles
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tour 3 -->
+          <div class="tour-card">
+            <div class="tour-image">🏛️ Tour Ciudad</div>
+            <div class="tour-content">
+              <h3 class="tour-title">Tour por la Ciudad</h3>
+              <p class="tour-description">
+                Conoce la historia y cultura de nuestra ciudad con un guía local
+                experto. Visita los lugares más emblemáticos.
+              </p>
+              <div class="tour-price">Desde $45 USD</div>
+              <div class="button-group">
+                <button
+                  data-flora="activity"
+                  data-activity-id="789"
+                  data-language="es"
+                  class="flora-button"
+                >
+                  🎫 Reservar Ahora
+                </button>
+
+                <button
+                  onclick="Flora.openActivity(789, currentLanguage)"
+                  class="flora-button secondary"
+                >
+                  🔍 Ver Detalles
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Demostración -->
+      <div class="demo-section">
+        <h3>🔧 Diferentes Formas de Integración</h3>
+        <p>
+          Aquí puedes ver ejemplos de las diferentes opciones de integración
+          disponibles:
+        </p>
+
+        <div class="demo-grid">
+          <div class="demo-item">
+            <h4>1. Botón Simple</h4>
+            <p>Botón básico que abre la actividad en popup</p>
+            <button
+              onclick="Flora.openActivity(1, currentLanguage)"
+              class="flora-button small"
+            >
+              Reservar Tour
+            </button>
+          </div>
+
+          <div class="demo-item">
+            <h4>2. Botón con Atributos</h4>
+            <p>Botón que se configura automáticamente</p>
+            <button
+              data-flora="activity"
+              data-activity-id="1"
+              data-language="es"
+              class="flora-button small"
+            >
+              Reservar Tour
+            </button>
+          </div>
+
+          <div class="demo-item">
+            <h4>3. Enlace Estilo Botón</h4>
+            <p>Enlace HTML con apariencia de botón</p>
+            <a
+              href="#"
+              onclick="Flora.openActivity(1, currentLanguage); return false;"
+              class="flora-button small"
+              style="text-decoration: none"
+            >
+              Reservar Tour
+            </a>
+          </div>
+
+          <div class="demo-item">
+            <h4>4. Botón Personalizado</h4>
+            <p>Botón con estilos personalizados</p>
+            <button
+              onclick="Flora.openActivity(1, currentLanguage)"
+              style="
+                background: linear-gradient(45deg, #f47920, #e06a1a);
+                color: white;
+                padding: 15px 30px;
+                border: none;
+                border-radius: 25px;
+                cursor: pointer;
+                font-weight: bold;
+                box-shadow: 0 4px 15px rgba(244, 121, 32, 0.3);
+              "
+            >
+              ✨ Reservar Ahora
+            </button>
+          </div>
+
+          <div class="demo-item">
+            <h4>5. Botón Grande</h4>
+            <p>Botón de llamada a la acción prominente</p>
+            <button
+              onclick="Flora.openActivity(1, currentLanguage)"
+              class="flora-button large"
+              style="width: 100%"
+            >
+              🚀 RESERVAR TOUR AHORA
+            </button>
+          </div>
+
+          <div class="demo-item">
+            <h4>6. Menú de Actividades</h4>
+            <p>Botón para ver todas las actividades</p>
+            <button
+              onclick="Flora.openMenu(456, currentLanguage)"
+              class="flora-button secondary"
+            >
+              📋 Ver Todas las Actividades
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <h3>¿Necesitas más actividades?</h3>
+        <p>Explora nuestro catálogo completo de tours y experiencias</p>
+        <div class="button-group" style="justify-content: center">
+          <button
+            onclick="Flora.openMenu(456, currentLanguage)"
+            class="flora-button large"
+          >
+            🌟 Ver Todas las Actividades
+          </button>
+
+          <button
+            data-flora="menu"
+            data-agency-id="456"
+            data-language="es"
+            class="flora-button large secondary"
+          >
+            📞 Contactar Agencia
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Variable global para el idioma actual
+      let currentLanguage = "es";
+
+      // Función para cambiar el idioma
+      function setLanguage(language) {
+        currentLanguage = language;
+
+        // Actualizar botones de idioma
+        document
+          .getElementById("btn-es")
+          .classList.toggle("active", language === "es");
+        document
+          .getElementById("btn-en")
+          .classList.toggle("active", language === "en");
+
+        // Actualizar todos los botones con atributos data-flora
+        const floraButtons = document.querySelectorAll("[data-flora]");
+        floraButtons.forEach((button) => {
+          button.setAttribute("data-language", language);
+        });
+
+        // Actualizar textos según el idioma
+        updateTexts(language);
+      }
+
+      // Función para actualizar textos según el idioma
+      function updateTexts(language) {
+        const texts = {
+          es: {},
+          en: {},
+        };
+
+        // Aquí podrías actualizar textos dinámicamente si fuera necesario
+        console.log(`Idioma cambiado a: ${language}`);
+      }
+
+      // Función para crear un botón dinámicamente (ejemplo)
+      function createDynamicButton() {
+        const button = Flora.createActivityButton(1, currentLanguage, {
+          text:
+            currentLanguage === "es"
+              ? "Reservar Dinámicamente"
+              : "Reserve Dynamically",
+          style: {
+            backgroundColor: "#28a745",
+            color: "white",
+            padding: "10px 20px",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          },
+        });
+
+        // Agregar el botón al final de la página
+        document.body.appendChild(button);
+      }
+
+      // Función para mostrar información del popup
+      function showPopupInfo() {
+        alert(
+          `Popup configurado para abrir en ventana de ${Flora.config.popupWidth}x${Flora.config.popupHeight}px`
+        );
+      }
+
+      // Inicializar cuando la página esté lista
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log(
+          "Página cargada. Flora+ Integration Script está disponible."
+        );
+        console.log(
+          'Puedes usar Flora.openActivity(1, "es") para abrir una actividad.'
+        );
+
+        // Verificar que el script se cargó correctamente
+        if (typeof Flora !== "undefined") {
+          console.log("✅ Flora+ Integration Script cargado correctamente");
+        } else {
+          console.error("❌ Error: Flora+ Integration Script no se cargó");
+        }
+      });
+
+      // Función de ejemplo para manejar errores de popup
+      function handlePopupError() {
+        console.log(
+          "Si los popups están bloqueados, se abrirá en nueva pestaña automáticamente"
+        );
+      }
+    </script>
+  </body>
+</html>

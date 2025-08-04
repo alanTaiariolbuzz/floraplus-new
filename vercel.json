@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "app/api/cron/move-abandoned-reservations/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/move-abandoned-reservations",
+      "schedule": "*/2 * * * *"
+    }
+  ]
+}

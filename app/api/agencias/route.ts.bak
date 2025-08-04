@@ -1,0 +1,565 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { z, ZodError } from 'zod';
+import { createClient } from '../../../utils/supabase/server';
+import { logError, logInfo } from '../../../utils/error/logger';
+import { getAgenciasFiltradas } from './controllers/agenciaController';
+// No necesitamos uuid por ahora, ya que no estamos creando usuarios
+// La funcionalidad de envío de email de bienvenida se agregará cuando implementemos la creación del usuario administrador
+
+/**
+ * @swagger
+ * /api/agencias:
+ *   get:
+ *     tags:
+ *       - Agencias
+ *     summary: Obtener lista de agencias
+ *     description: Obtiene una lista de agencias o una agencia específica por ID
+ *     parameters:
+ *       - name: id
+ *         in: query
+ *         description: ID de la agencia (opcional)
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Operación exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 code:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: "Agencias obtenidas exitosamente"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       nombre:
+ *                         type: string
+ *                       email_contacto:
+ *                         type: string
+ *                       telefono:
+ *                         type: string
+ *                       direccion:
+ *                         type: string
+ *                       termino_cond:
+ *                         type: string
+ *                       moneda:
+ *                         type: string
+ *                       activa:
+ *                         type: boolean
+ *                       cedula:
+ *                         type: integer
+ *                       web:
+ *                         type: string
+ *                       pais:
+ *                         type: string
+ *                       nombre_comercial:
+ *                         type: string
+ *                       fee:
+ *                         type: string
+ *                       tax:
+ *                         type: integer
+ *                       convenience_fee_fijo:
+ *                         type: boolean
+ *                       convenience_fee_fijo_valor:
+ *                         type: integer
+ *                       convenience_fee_variable:
+ *                         type: boolean
+ *                       convenience_fee_variable_valor:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       updated_at:
+ *                         type: string
+ *                         format: date-time
+ */
+
+// GET: Obtener agencias
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const idParam = searchParams.get('id');
+    const activaParam = searchParams.get('activa');
+    
+    const filtros: any = {};
+    
+    // Convertir parámetros si están presentes
+    if (idParam) {
+      filtros.id = parseInt(idParam);
+    }
+    
+    if (activaParam !== null) {
+      filtros.activa = activaParam === 'true';
+    }
+    
+    // Utilizar el controlador para obtener las agencias filtradas
+    const resultado = await getAgenciasFiltradas(filtros);
+    
+    logInfo(`Agencias obtenidas exitosamente`, { endpoint: '/api/agencias/GET' });
+    return NextResponse.json(resultado);
+  } catch (err: any) {
+    logError({
+      message: 'Error al obtener agencias',
+      error: err,
+      endpoint: '/api/agencias/GET'
+    });
+    
+    return NextResponse.json({
+      code: err.code || 500,
+      message: err.message || 'Error al obtener agencias'
+    }, { status: err.code || 500 });
+  }
+}
+
+/**
+ * @swagger
+ * /api/agencias:
+ *   post:
+ *     tags:
+ *       - Agencias
+ *     summary: Crear una nueva agencia
+ *     description: Crea una nueva agencia con los datos proporcionados
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre de la agencia
+ *               email_contacto:
+ *                 type: string
+ *                 description: Email de contacto de la agencia
+ *               telefono:
+ *                 type: string
+ *                 description: Teléfono de la agencia
+ *               direccion:
+ *                 type: string
+ *                 description: Dirección de la agencia
+ *               termino_cond:
+ *                 type: string
+ *                 description: Términos y condiciones de la agencia
+ *               moneda:
+ *                 type: string
+ *                 description: Moneda de la agencia
+ *               activa:
+ *                 type: boolean
+ *                 description: Si la agencia está activa o no
+ *               cedula:
+ *                 type: integer
+ *                 description: Cédula de la agencia
+ *               web:
+ *                 type: string
+ *                 description: Sitio web de la agencia
+ *               pais:
+ *                 type: string
+ *                 description: País de la agencia
+ *               nombre_comercial:
+ *                 type: string
+ *                 description: Nombre comercial de la agencia
+ *               fee:
+ *                 type: string
+ *                 description: Comisión de la agencia
+ *               tax:
+ *                 type: integer
+ *                 description: Impuesto de la agencia
+ *               convenience_fee_fijo:
+ *                 type: boolean
+ *                 description: Si la agencia tiene comisión fija
+ *               convenience_fee_fijo_valor:
+ *                 type: integer
+ *                 description: Valor de la comisión fija
+ *               convenience_fee_variable:
+ *                 type: boolean
+ *                 description: Si la agencia tiene comisión variable
+ *               convenience_fee_variable_valor:
+ *                 type: string
+ *                 description: Valor de la comisión variable
+ *             required:
+ *               - nombre
+ *               - email_contacto
+ *     responses:
+ *       201:
+ *         description: Agencia creada exitosamente
+ *       400:
+ *         description: Datos de entrada inválidos
+ *       500:
+ *         description: Error interno del servidor
+ */
+// Esquema de validación para crear una agencia
+const agenciaSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es requerido'),
+  email_contacto: z.string().email('Email inválido'),
+  telefono: z.string().optional(),
+  direccion: z.string().optional(),
+  termino_cond: z.string().optional(),
+  moneda: z.string().optional(),
+  activa: z.boolean().optional().default(true),
+  cedula: z.number().optional(),
+  web: z.string().optional(),
+  pais: z.string().optional(),
+  nombre_comercial: z.string().optional(),
+  fee: z.string().optional(),
+  tax: z.number().optional(),
+  convenience_fee_fijo: z.boolean().optional().default(false),
+  convenience_fee_fijo_valor: z.number().optional(),
+  convenience_fee_variable: z.boolean().optional().default(false),
+  convenience_fee_variable_valor: z.string().optional()
+});
+
+// POST: Crear una agencia y usuario administrador
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const body = await request.json();
+    const data = agenciaSchema.parse(body);
+
+    const now = new Date().toISOString();
+
+    // Insertar la nueva agencia
+    const { data: nuevaAgencia, error } = await supabase
+      .from('agencias')
+      .insert({
+        nombre: data.nombre,
+        email_contacto: data.email_contacto,
+        telefono: data.telefono || '',
+        direccion: data.direccion || '',
+        termino_cond: data.termino_cond || '',
+        moneda: data.moneda || 'USD',
+        activa: data.activa === undefined ? true : data.activa,
+        cedula: data.cedula || null,
+        web: data.web || '',
+        pais: data.pais || '',
+        nombre_comercial: data.nombre_comercial || '',
+        fee: data.fee || '',
+        tax: data.tax || 0,
+        convenience_fee_fijo: data.convenience_fee_fijo === undefined ? false : data.convenience_fee_fijo,
+        convenience_fee_fijo_valor: data.convenience_fee_fijo_valor || 0,
+        convenience_fee_variable: data.convenience_fee_variable === undefined ? false : data.convenience_fee_variable,
+        convenience_fee_variable_valor: data.convenience_fee_variable_valor || '',
+        created_at: now,
+        updated_at: now
+      })
+      .select('*')
+      .single();
+
+    if (error) throw error;
+
+    logInfo(`Agencia creada exitosamente: ${nuevaAgencia.nombre}`, { endpoint: '/api/agencias/POST' });
+    return NextResponse.json({
+      code: 201,
+      message: 'Agencia creada exitosamente',
+      data: nuevaAgencia
+    }, { status: 201 });
+  } catch (err) {
+    if (err instanceof ZodError) {
+      logError(err, { endpoint: '/api/agencias/POST', errorType: 'validationError' });
+      return NextResponse.json({
+        code: 400,
+        message: 'Datos de agencia inválidos',
+        errors: err.errors
+      }, { status: 400 });
+    }
+    logError(err, { endpoint: '/api/agencias/POST' });
+    return NextResponse.json({
+      code: 500,
+      message: 'Error interno del servidor'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * @swagger
+ * /api/agencias:
+ *   put:
+ *     tags:
+ *       - Agencias
+ *     summary: Actualizar una agencia
+ *     description: Actualiza una agencia existente con los datos proporcionados
+ *     parameters:
+ *       - name: id
+ *         in: query
+ *         description: ID de la agencia a actualizar
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre de la agencia
+ *               email_contacto:
+ *                 type: string
+ *                 description: Email de contacto de la agencia
+ *               telefono:
+ *                 type: string
+ *                 description: Teléfono de la agencia
+ *               direccion:
+ *                 type: string
+ *                 description: Dirección de la agencia
+ *               termino_cond:
+ *                 type: string
+ *                 description: Términos y condiciones de la agencia
+ *               moneda:
+ *                 type: string
+ *                 description: Moneda de la agencia
+ *               activa:
+ *                 type: boolean
+ *                 description: Si la agencia está activa o no
+ *               cedula:
+ *                 type: integer
+ *                 description: Cédula de la agencia
+ *               web:
+ *                 type: string
+ *                 description: Sitio web de la agencia
+ *               pais:
+ *                 type: string
+ *                 description: País de la agencia
+ *               nombre_comercial:
+ *                 type: string
+ *                 description: Nombre comercial de la agencia
+ *               fee:
+ *                 type: string
+ *                 description: Comisión de la agencia
+ *               tax:
+ *                 type: integer
+ *                 description: Impuesto de la agencia
+ *               convenience_fee_fijo:
+ *                 type: boolean
+ *                 description: Si la agencia tiene comisión fija
+ *               convenience_fee_fijo_valor:
+ *                 type: integer
+ *                 description: Valor de la comisión fija
+ *               convenience_fee_variable:
+ *                 type: boolean
+ *                 description: Si la agencia tiene comisión variable
+ *               convenience_fee_variable_valor:
+ *                 type: string
+ *                 description: Valor de la comisión variable
+ *     responses:
+ *       200:
+ *         description: Agencia actualizada exitosamente
+ *       400:
+ *         description: Datos de entrada inválidos
+ *       404:
+ *         description: Agencia no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+// Esquema de validación para actualizar una agencia
+const agenciaUpdateSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es requerido').optional(),
+  email_contacto: z.string().email('Email inválido').optional(),
+  telefono: z.string().optional(),
+  direccion: z.string().optional(),
+  termino_cond: z.string().optional(),
+  moneda: z.string().optional(),
+  activa: z.boolean().optional(),
+  cedula: z.number().optional(),
+  web: z.string().optional(),
+  pais: z.string().optional(),
+  nombre_comercial: z.string().optional(),
+  fee: z.string().optional(),
+  tax: z.number().optional(),
+  convenience_fee_fijo: z.boolean().optional(),
+  convenience_fee_fijo_valor: z.number().optional(),
+  convenience_fee_variable: z.boolean().optional(),
+  convenience_fee_variable_valor: z.string().optional()
+});
+
+// PUT: Actualizar una agencia
+export async function PUT(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const idParam = searchParams.get('id');
+
+    if (!idParam) {
+      return NextResponse.json({
+        code: 400,
+        message: 'Se requiere el parámetro ID'
+      }, { status: 400 });
+    }
+
+    const id = Number(idParam);
+    const body = await request.json();
+    const data = agenciaUpdateSchema.parse(body);
+
+    const now = new Date().toISOString();
+
+    // Verificar que la agencia exista
+    const { data: agenciaExistente, error: errorBusqueda } = await supabase
+      .from('agencias')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (errorBusqueda || !agenciaExistente) {
+      logError(errorBusqueda || new Error('Agencia no encontrada'), { endpoint: '/api/agencias/PUT', id });
+      return NextResponse.json({
+        code: 404,
+        message: 'Agencia no encontrada'
+      }, { status: 404 });
+    }
+
+    // Preparar datos de actualización
+    const updateData: any = {
+      updated_at: now
+    };
+
+    if (data.nombre !== undefined) updateData.nombre = data.nombre;
+    if (data.email_contacto !== undefined) updateData.email_contacto = data.email_contacto;
+    if (data.telefono !== undefined) updateData.telefono = data.telefono;
+    if (data.direccion !== undefined) updateData.direccion = data.direccion;
+    if (data.termino_cond !== undefined) updateData.termino_cond = data.termino_cond;
+    if (data.moneda !== undefined) updateData.moneda = data.moneda;
+    if (data.activa !== undefined) updateData.activa = data.activa;
+    if (data.cedula !== undefined) updateData.cedula = data.cedula;
+    if (data.web !== undefined) updateData.web = data.web;
+    if (data.pais !== undefined) updateData.pais = data.pais;
+    if (data.nombre_comercial !== undefined) updateData.nombre_comercial = data.nombre_comercial;
+    if (data.fee !== undefined) updateData.fee = data.fee;
+    if (data.tax !== undefined) updateData.tax = data.tax;
+    if (data.convenience_fee_fijo !== undefined) updateData.convenience_fee_fijo = data.convenience_fee_fijo;
+    if (data.convenience_fee_fijo_valor !== undefined) updateData.convenience_fee_fijo_valor = data.convenience_fee_fijo_valor;
+    if (data.convenience_fee_variable !== undefined) updateData.convenience_fee_variable = data.convenience_fee_variable;
+    if (data.convenience_fee_variable_valor !== undefined) updateData.convenience_fee_variable_valor = data.convenience_fee_variable_valor;
+
+    // Actualizar la agencia
+    const { data: agenciaActualizada, error } = await supabase
+      .from('agencias')
+      .update(updateData)
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (error) throw error;
+
+    logInfo(`Agencia actualizada exitosamente: ${agenciaActualizada.nombre}`, { endpoint: '/api/agencias/PUT', id });
+    return NextResponse.json({
+      code: 200,
+      message: 'Agencia actualizada exitosamente',
+      data: agenciaActualizada
+    });
+  } catch (err) {
+    if (err instanceof ZodError) {
+      logError(err, { endpoint: '/api/agencias/PUT', errorType: 'validationError' });
+      return NextResponse.json({
+        code: 400,
+        message: 'Datos de agencia inválidos',
+        errors: err.errors
+      }, { status: 400 });
+    }
+    logError(err, { endpoint: '/api/agencias/PUT' });
+    return NextResponse.json({
+      code: 500,
+      message: 'Error interno del servidor'
+    }, { status: 500 });
+  }
+}
+
+/**
+ * @swagger
+ * /api/agencias:
+ *   delete:
+ *     tags:
+ *       - Agencias
+ *     summary: Desactivar una agencia
+ *     description: Desactiva una agencia existente (eliminación lógica)
+ *     parameters:
+ *       - name: id
+ *         in: query
+ *         description: ID de la agencia a desactivar
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Agencia desactivada exitosamente
+ *       404:
+ *         description: Agencia no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+// DELETE: Desactivar una agencia (eliminación lógica)
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const idParam = searchParams.get('id');
+
+    if (!idParam) {
+      return NextResponse.json({
+        code: 400,
+        message: 'Se requiere el parámetro ID'
+      }, { status: 400 });
+    }
+
+    const id = Number(idParam);
+
+    // Verificar que la agencia exista
+    const { data: agenciaExistente, error: errorBusqueda } = await supabase
+      .from('agencias')
+      .select('id, nombre, activa')
+      .eq('id', id)
+      .single();
+
+    if (errorBusqueda || !agenciaExistente) {
+      logError(errorBusqueda || new Error('Agencia no encontrada'), { endpoint: '/api/agencias/DELETE', id });
+      return NextResponse.json({
+        code: 404,
+        message: 'Agencia no encontrada'
+      }, { status: 404 });
+    }
+
+    if (!agenciaExistente.activa) {
+      logInfo(`Agencia ya estaba desactivada: ${agenciaExistente.nombre}`, { endpoint: '/api/agencias/DELETE', id });
+      return NextResponse.json({
+        code: 200,
+        message: 'Agencia ya estaba desactivada'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    // Desactivar la agencia (eliminación lógica)
+    const { error } = await supabase
+      .from('agencias')
+      .update({
+        activa: false,
+        deleted_at: now,
+        updated_at: now
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    logInfo(`Agencia desactivada exitosamente: ${agenciaExistente.nombre}`, { endpoint: '/api/agencias/DELETE', id });
+    return NextResponse.json({
+      code: 200,
+      message: 'Agencia desactivada exitosamente'
+    });
+  } catch (err) {
+    logError(err, { endpoint: '/api/agencias/DELETE' });
+    return NextResponse.json({
+      code: 500,
+      message: 'Error interno del servidor'
+    }, { status: 500 });
+  }
+}

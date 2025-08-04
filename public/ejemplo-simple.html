@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ejemplo Modal - Integración Flora+</title>
+
+    <!-- Incluir el script de Flora+ -->
+    <script src="/api/flora-integration.js"></script>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #f47920;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .demo-section {
+        margin: 30px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f9f9f9;
+      }
+
+      .demo-section h3 {
+        color: #333;
+        margin-bottom: 15px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 15px 0;
+      }
+
+      .flora-button {
+        background-color: #f47920;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s ease;
+      }
+
+      .flora-button:hover {
+        background-color: #e06a1a;
+      }
+
+      .flora-button.secondary {
+        background-color: #6c757d;
+      }
+
+      .flora-button.secondary:hover {
+        background-color: #5a6268;
+      }
+
+      .info-box {
+        background: #e3f2fd;
+        border: 1px solid #2196f3;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+
+      .info-box h4 {
+        color: #1976d2;
+        margin-bottom: 10px;
+      }
+
+      .code-example {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 10px 0;
+        font-family: monospace;
+        font-size: 12px;
+        overflow-x: auto;
+      }
+
+      .feature-highlight {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+
+      .feature-highlight h4 {
+        color: #856404;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🏖️ Ejemplo Modal - Integración Flora+</h1>
+
+      <div class="feature-highlight">
+        <h4>🎉 ¡Nuevo! Modal Overlay</h4>
+        <p>
+          Ahora los botones abren un <strong>modal overlay</strong> dentro de la
+          misma página (como Peek.com), no una nueva ventana del navegador.
+        </p>
+        <p><strong>Características:</strong></p>
+        <ul>
+          <li>✅ Modal elegante con animaciones suaves</li>
+          <li>✅ Se cierra haciendo clic fuera o con ESC</li>
+          <li>✅ Responsive para móviles</li>
+          <li>✅ Loading spinner mientras carga</li>
+          <li>✅ Bloquea el scroll de la página</li>
+        </ul>
+      </div>
+
+      <div class="info-box">
+        <h4>ℹ️ Información</h4>
+        <p>
+          Este es un ejemplo de cómo integrar Flora+ en tu sitio web usando
+          modales overlay.
+        </p>
+        <p><strong>ID de Actividad de ejemplo:</strong> 1</p>
+        <p><strong>ID de Agencia de ejemplo:</strong> 456</p>
+      </div>
+
+      <!-- Ejemplo 1: Botón Simple -->
+      <div class="demo-section">
+        <h3>1. Botón Simple</h3>
+        <p>Botón básico que abre una actividad específica en modal overlay:</p>
+        <div class="button-group">
+          <button onclick="Flora.openActivity(1, 'es')" class="flora-button">
+            🎫 Reservar Actividad
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button onclick="Flora.openActivity(1, 'es')"
+          class="flora-button"&gt; 🎫 Reservar Actividad &lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 2: Botón con Atributos -->
+      <div class="demo-section">
+        <h3>2. Botón con Atributos (Recomendado)</h3>
+        <p>Botón que se configura automáticamente usando atributos HTML:</p>
+        <div class="button-group">
+          <button
+            data-flora="activity"
+            data-activity-id="1"
+            data-language="es"
+            class="flora-button"
+          >
+            🎫 Reservar Actividad
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button data-flora="activity" data-activity-id="1"
+          data-language="es" class="flora-button" &gt; 🎫 Reservar Actividad
+          &lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 3: Menú de Actividades -->
+      <div class="demo-section">
+        <h3>3. Menú de Actividades</h3>
+        <p>Botón para ver todas las actividades de una agencia:</p>
+        <div class="button-group">
+          <button onclick="Flora.openMenu(22, 'en')" class="">
+            📋 Ver Todas las Actividades
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button onclick="Flora.openMenu(456, 'es')"
+          class="flora-button"&gt; 📋 Ver Todas las Actividades &lt;/button&gt;
+        </div>
+      </div>
+
+      <button id="1" data-flora-lang="en">Book Now</button>
+      <a id="menu22" data-flora-lang="es">Ver Actividades</a>
+
+      <!-- Ejemplo 4: Botón Personalizado -->
+      <div class="demo-section">
+        <h3>4. Botón Personalizado</h3>
+        <p>Botón con estilos personalizados:</p>
+        <div class="button-group">
+          <button
+            onclick="Flora.openActivity(1, 'es')"
+            style="
+              background: linear-gradient(45deg, #f47920, #e06a1a);
+              color: white;
+              padding: 15px 30px;
+              border: none;
+              border-radius: 25px;
+              cursor: pointer;
+              font-weight: bold;
+              box-shadow: 0 4px 15px rgba(244, 121, 32, 0.3);
+            "
+          >
+            ✨ Reservar Ahora
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button onclick="Flora.openActivity(1, 'es')" style=" background:
+          linear-gradient(45deg, #F47920, #E06A1A); color: white; padding: 15px
+          30px; border: none; border-radius: 25px; cursor: pointer; font-weight:
+          bold; box-shadow: 0 4px 15px rgba(244, 121, 32, 0.3); " &gt; ✨
+          Reservar Ahora &lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 5: Enlace -->
+
+      <button id="menu-es-22">Ver Todas las Actividade!!!!!</button>
+      <a id="menu-es-33">Actividades</a>
+
+      <!-- Menú de agencia en inglés -->
+      <button id="actividad-en-1">View All Activities</button>
+      <a id="actividad-es-1">Activities</a>
+
+      <div class="demo-section">
+        <h3>5. Enlace HTML</h3>
+        <p>Enlace que funciona como botón:</p>
+        <div class="button-group">
+          <a
+            href="#"
+            onclick="Flora.openActivity(1, 'es'); return false;"
+            class="flora-button"
+            style="text-decoration: none"
+          >
+            🔗 Enlace de Reserva
+          </a>
+        </div>
+        <div class="code-example">
+          &lt;a href="#" onclick="Flora.openActivity(1, 'es'); return false;"
+          class="flora-button" style="text-decoration: none;" &gt; 🔗 Enlace de
+          Reserva &lt;/a&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 6: Botón Grande -->
+      <div class="demo-section">
+        <h3>6. Botón de Llamada a la Acción</h3>
+        <p>Botón prominente para conversiones:</p>
+        <div class="button-group">
+          <button
+            onclick="Flora.openActivity(1, 'es')"
+            class="flora-button"
+            style="
+              padding: 20px 40px;
+              font-size: 18px;
+              width: 100%;
+              margin: 10px 0;
+            "
+          >
+            🚀 RESERVAR TOUR AHORA
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button onclick="Flora.openActivity(1, 'es')" class="flora-button"
+          style=" padding: 20px 40px; font-size: 18px; width: 100%; " &gt; 🚀
+          RESERVAR TOUR AHORA &lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 7: Diferentes Idiomas -->
+      <div class="demo-section">
+        <h3>7. Diferentes Idiomas</h3>
+        <p>Prueba los botones en español e inglés:</p>
+        <div class="button-group">
+          <button onclick="Flora.openActivity(1, 'es')" class="flora-button">
+            🇪🇸 Español
+          </button>
+          <button onclick="Flora.openActivity(1, 'en')" class="flora-button">
+            🇺🇸 English
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button onclick="Flora.openActivity(1, 'es')"&gt;🇪🇸
+          Español&lt;/button&gt; &lt;button onclick="Flora.openActivity(1,
+          'en')"&gt;🇺🇸 English&lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Información de Debug -->
+      <div class="info-box">
+        <h4>🔧 Información de Debug</h4>
+        <p>
+          Abre la consola del navegador (F12) para ver información sobre la
+          carga del script.
+        </p>
+        <p>
+          <strong>URL Base detectada:</strong>
+          <span id="base-url">Cargando...</span>
+        </p>
+        <p>
+          <strong>Estado del script:</strong>
+          <span id="script-status">Verificando...</span>
+        </p>
+        <p>
+          <strong>Modo modal:</strong>
+          <span id="modal-mode">Verificando...</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- <script>
+      // Verificar que el script se cargó correctamente
+      document.addEventListener("DOMContentLoaded", function () {
+        const baseUrlSpan = document.getElementById("base-url");
+        const scriptStatusSpan = document.getElementById("script-status");
+        const modalModeSpan = document.getElementById("modal-mode");
+
+        if (typeof Flora !== "undefined") {
+          scriptStatusSpan.textContent = "✅ Cargado correctamente";
+          scriptStatusSpan.style.color = "green";
+          baseUrlSpan.textContent = Flora.config.baseUrl;
+          modalModeSpan.textContent = "✅ Modal Overlay (no popup window)";
+          modalModeSpan.style.color = "green";
+
+          console.log("✅ Flora+ Integration Script cargado correctamente");
+          console.log("Base URL:", Flora.config.baseUrl);
+          console.log("Modal mode: Overlay (no popup window)");
+          console.log("Puedes usar:");
+          console.log('- Flora.openActivity(1, "es") para abrir una actividad');
+          console.log('- Flora.openMenu(456, "es") para abrir el menú');
+          console.log("- Flora.closeModal() para cerrar el modal manualmente");
+        } else {
+          scriptStatusSpan.textContent = "❌ Error al cargar";
+          scriptStatusSpan.style.color = "red";
+          baseUrlSpan.textContent = "No disponible";
+          modalModeSpan.textContent = "❌ No disponible";
+          modalModeSpan.style.color = "red";
+
+          console.error("❌ Error: Flora+ Integration Script no se cargó");
+        }
+      });
+
+      // Función para probar diferentes idiomas
+      function testLanguage(language) {
+        console.log(`Probando idioma: ${language}`);
+        Flora.openActivity(1, language);
+      }
+
+      // Función para mostrar información del modal
+      function showModalInfo() {
+        if (typeof Flora !== "undefined") {
+          alert(
+            `Modal configurado para abrir en overlay de ${Flora.config.modalWidth}x${Flora.config.modalHeight}`
+          );
+        } else {
+          alert("Script no cargado");
+        }
+      }
+    </script> -->
+  </body>
+</html>

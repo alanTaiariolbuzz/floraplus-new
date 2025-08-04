@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ejemplo Súper Simple - Flora+</title>
+
+    <!-- SOLO ESTO NECESITAS AGREGAR A TU SITIO WEB -->
+    <script src="/api/flora-integration.js"></script>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #f47920;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .demo-section {
+        margin: 30px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f9f9f9;
+      }
+
+      .demo-section h3 {
+        color: #333;
+        margin-bottom: 15px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin: 15px 0;
+      }
+
+      .flora-button {
+        background-color: #f47920;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s ease;
+      }
+
+      .flora-button:hover {
+        background-color: #e06a1a;
+      }
+
+      .flora-button.secondary {
+        background-color: #6c757d;
+      }
+
+      .flora-button.secondary:hover {
+        background-color: #5a6268;
+      }
+
+      .info-box {
+        background: #e3f2fd;
+        border: 1px solid #2196f3;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+
+      .info-box h4 {
+        color: #1976d2;
+        margin-bottom: 10px;
+      }
+
+      .code-example {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 10px 0;
+        font-family: monospace;
+        font-size: 12px;
+        overflow-x: auto;
+      }
+
+      .magic-highlight {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+
+      .magic-highlight h4 {
+        color: #856404;
+        margin-bottom: 10px;
+      }
+
+      .step {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 15px 0;
+      }
+
+      .step h4 {
+        color: #155724;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 Integración Súper Simple - Flora+</h1>
+
+      <div class="magic-highlight">
+        <h4>✨ ¡MAGIA! Solo 2 pasos:</h4>
+        <ol>
+          <li><strong>Pega el script</strong> en tu HTML</li>
+          <li><strong>Agrega atributos</strong> a tus botones existentes</li>
+        </ol>
+        <p><strong>¡Eso es todo! No más código JavaScript.</strong></p>
+      </div>
+
+      <div class="step">
+        <h4>📝 Paso 1: Agregar el Script</h4>
+        <p>Pega esto en el <code>&lt;head&gt;</code> de tu HTML:</p>
+        <div class="code-example">
+          &lt;script
+          src="https://stg.getfloraplus.com/api/flora-integration.js"&gt;&lt;/script&gt;
+        </div>
+      </div>
+
+      <div class="step">
+        <h4>🎯 Paso 2: Agregar Atributos a tus Botones</h4>
+        <p>Simplemente agrega estos atributos a tus botones existentes:</p>
+      </div>
+
+      <!-- Ejemplo 1: Botón de Actividad -->
+      <div class="demo-section">
+        <h3>🎫 Para una Actividad Específica</h3>
+        <p>Agrega <code>data-flora-activity="1"</code> a tu botón:</p>
+        <div class="button-group">
+          <button data-flora-activity="1" class="flora-button">
+            🎫 Reservar Tour
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button data-flora-activity="1" class="flora-button"&gt; 🎫
+          Reservar Tour &lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 2: Menú de Actividades -->
+      <div class="demo-section">
+        <h3>📋 Para el Menú de Todas las Actividades</h3>
+        <p>Agrega <code>data-flora-menu="22"</code> a tu botón:</p>
+        <div class="button-group">
+          <button data-flora-menu="22" class="flora-button secondary">
+            📋 Ver Todas las Actividades
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button data-flora-menu="22" class="flora-button"&gt; 📋 Ver Todas
+          las Actividades &lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 3: Con Idioma Específico -->
+      <div class="demo-section">
+        <h3>🌍 Con Idioma Específico</h3>
+        <p>Agrega <code>data-flora-lang="en"</code> para inglés:</p>
+        <div class="button-group">
+          <button
+            data-flora-activity="1"
+            data-flora-lang="en"
+            class="flora-button"
+          >
+            🇺🇸 Reserve Tour
+          </button>
+          <button
+            data-flora-menu="22"
+            data-flora-lang="en"
+            class="flora-button secondary"
+          >
+            🇺🇸 View All Activities
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button data-flora-activity="1" data-flora-lang="en"&gt; 🇺🇸 Reserve
+          Tour &lt;/button&gt; &lt;button data-flora-menu="22"
+          data-flora-lang="en"&gt; 🇺🇸 View All Activities &lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 4: Enlaces HTML -->
+      <div class="demo-section">
+        <h3>🔗 También Funciona con Enlaces</h3>
+        <p>
+          Puedes usar los mismos atributos en enlaces <code>&lt;a&gt;</code>:
+        </p>
+        <div class="button-group">
+          <a
+            href="#"
+            data-flora-activity="1"
+            class="flora-button"
+            style="text-decoration: none"
+          >
+            🔗 Reservar Tour
+          </a>
+          <a
+            href="#"
+            data-flora-menu="22"
+            class="flora-button secondary"
+            style="text-decoration: none"
+          >
+            🔗 Ver Actividades
+          </a>
+        </div>
+        <div class="code-example">
+          &lt;a href="#" data-flora-activity="1" class="flora-button"&gt; 🔗
+          Reservar Tour &lt;/a&gt; &lt;a href="#" data-flora-menu="22"
+          class="flora-button"&gt; 🔗 Ver Actividades &lt;/a&gt;
+        </div>
+      </div>
+
+      <!-- Ejemplo 5: Botones con onclick existente -->
+      <div class="demo-section">
+        <h3>⚡ Compatible con onclick existente</h3>
+        <p>Si tu botón ya tiene <code>onclick</code>, también funciona:</p>
+        <div class="button-group">
+          <button
+            onclick="alert('¡Hola!')"
+            data-flora-activity="1"
+            class="flora-button"
+          >
+            ⚡ Botón con onclick + Flora+
+          </button>
+        </div>
+        <div class="code-example">
+          &lt;button onclick="alert('¡Hola!')" data-flora-activity="1"
+          class="flora-button" &gt; ⚡ Botón con onclick + Flora+
+          &lt;/button&gt;
+        </div>
+      </div>
+
+      <!-- Atributos Disponibles -->
+      <div class="info-box">
+        <h4>📚 Atributos Disponibles</h4>
+        <table style="width: 100%; border-collapse: collapse">
+          <tr style="background: #f8f9fa">
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left">
+              Atributo
+            </th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left">
+              Descripción
+            </th>
+            <th style="padding: 8px; border: 1px solid #ddd; text-align: left">
+              Ejemplo
+            </th>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd">
+              <code>data-flora-activity</code>
+            </td>
+            <td style="padding: 8px; border: 1px solid #ddd">
+              ID de la actividad
+            </td>
+            <td style="padding: 8px; border: 1px solid #ddd">
+              <code>data-flora-activity="1"</code>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd">
+              <code>data-flora-menu</code>
+            </td>
+            <td style="padding: 8px; border: 1px solid #ddd">
+              ID de la agencia
+            </td>
+            <td style="padding: 8px; border: 1px solid #ddd">
+              <code>data-flora-menu="22"</code>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd">
+              <code>data-flora-lang</code>
+            </td>
+            <td style="padding: 8px; border: 1px solid #ddd">Idioma (es/en)</td>
+            <td style="padding: 8px; border: 1px solid #ddd">
+              <code>data-flora-lang="en"</code>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Información de Debug -->
+      <div class="info-box">
+        <h4>🔧 Estado del Sistema</h4>
+        <p>
+          <strong>Script cargado:</strong>
+          <span id="script-status">Verificando...</span>
+        </p>
+        <p>
+          <strong>Botones detectados:</strong>
+          <span id="buttons-count">Contando...</span>
+        </p>
+        <p><strong>URL Base:</strong> <span id="base-url">Cargando...</span></p>
+      </div>
+    </div>
+
+    <script>
+      // Verificar que el script se cargó correctamente
+      document.addEventListener("DOMContentLoaded", function () {
+        const scriptStatusSpan = document.getElementById("script-status");
+        const buttonsCountSpan = document.getElementById("buttons-count");
+        const baseUrlSpan = document.getElementById("base-url");
+
+        if (typeof Flora !== "undefined") {
+          scriptStatusSpan.textContent = "✅ Cargado correctamente";
+          scriptStatusSpan.style.color = "green";
+          baseUrlSpan.textContent = Flora.config.baseUrl;
+
+          // Contar botones con atributos Flora+
+          const activityButtons = document.querySelectorAll(
+            "[data-flora-activity]"
+          );
+          const menuButtons = document.querySelectorAll("[data-flora-menu]");
+          const totalButtons = activityButtons.length + menuButtons.length;
+
+          buttonsCountSpan.textContent = `${totalButtons} botones detectados`;
+          buttonsCountSpan.style.color = "green";
+
+          console.log("✅ Flora+ Integration Script cargado correctamente");
+          console.log(
+            "Botones de actividad detectados:",
+            activityButtons.length
+          );
+          console.log("Botones de menú detectados:", menuButtons.length);
+          console.log("Total de botones Flora+:", totalButtons);
+        } else {
+          scriptStatusSpan.textContent = "❌ Error al cargar";
+          scriptStatusSpan.style.color = "red";
+          buttonsCountSpan.textContent = "0 (script no cargado)";
+          buttonsCountSpan.style.color = "red";
+          baseUrlSpan.textContent = "No disponible";
+
+          console.error("❌ Error: Flora+ Integration Script no se cargó");
+        }
+      });
+    </script>
+  </body>
+</html>
