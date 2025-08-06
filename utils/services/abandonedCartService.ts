@@ -192,6 +192,7 @@ export async function recoverAbandonedReservation(codigoReserva: string) {
       actividad_id: abandonedReservation.actividad_id,
       pago_id: abandonedReservation.pago_id,
       codigo_reserva: abandonedReservation.codigo_reserva,
+      cancelled_at: null, // Asegurar que no tenga cancelled_at cuando se confirma
     };
 
     // Insertar en reservas
@@ -245,7 +246,6 @@ export async function recoverAbandonedReservation(codigoReserva: string) {
           );
           // No fallamos aquí porque la reserva ya se restauró
         } else {
-
         }
       }
     }

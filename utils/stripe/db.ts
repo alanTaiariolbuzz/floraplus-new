@@ -255,7 +255,10 @@ export const updateReservaToConfirmed = async (reservaId: number | string) => {
   // Primero intentar actualizar en la tabla reservas
   const { data: existingReservation, error: updateError } = await db
     .from("reservas")
-    .update({ estado: "confirmed" })
+    .update({
+      estado: "confirmed",
+      cancelled_at: null, // Limpiar cancelled_at cuando se confirma la reserva
+    })
     .eq("id", reservaId)
     .select()
     .single();
