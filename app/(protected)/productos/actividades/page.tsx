@@ -55,8 +55,6 @@ interface IntegrationCode {
 
 const d = getApiUrl("/actividades");
 
-
-
 // Loading fallback component for Suspense
 const LoadingFallback = () => <p>Loading page contents...</p>;
 
@@ -105,7 +103,7 @@ const ActividadesContent = () => {
     "button" | "link" | "iframe" | "popup"
   >("button");
   const [selectedLanguage, setSelectedLanguage] = useState<"es" | "en">("es");
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState<Record<string, boolean>>({});
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLElement>,
@@ -129,7 +127,6 @@ const ActividadesContent = () => {
   };
 
   const handleDelete = async () => {
-
     if (activityToDelete) {
       try {
         const response = await fetch(`${d}?id=${activityToDelete.id}`, {
@@ -356,8 +353,11 @@ id="menu-en-${agency_id}-FL"`;
   const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopiedCode(type);
-      setTimeout(() => setCopiedCode(null), 2000);
+      setCopiedCode((prev) => ({ ...prev, [type]: true }));
+      setTimeout(
+        () => setCopiedCode((prev) => ({ ...prev, [type]: false })),
+        2000
+      );
     } catch (err) {
       console.error("Error copying to clipboard:", err);
     }
@@ -514,7 +514,7 @@ id="menu-en-${agency_id}-FL"`;
                   }}
                 >
                   <span className="text-sm font-medium text-[#000000]">
-                    {copiedCode === "menu_es" ? "¡Copiado!" : "ESPAÑOL 🇪🇸"}
+                    {copiedCode["menu_es"] ? "¡Copiado!" : "ESPAÑOL 🇪🇸"}
                   </span>
                   <ContentCopyIcon fontSize="small" sx={{ color: "#F47920" }} />
                 </div>
@@ -530,7 +530,7 @@ id="menu-en-${agency_id}-FL"`;
                   }}
                 >
                   <span className="text-sm font-medium text-[#000000]">
-                    {copiedCode === "menu_en" ? "¡Copiado!" : "INGLES 🇬🇧"}
+                    {copiedCode["menu_en"] ? "¡Copiado!" : "INGLES 🇬🇧"}
                   </span>
                   <ContentCopyIcon fontSize="small" sx={{ color: "#F47920" }} />
                 </div>
@@ -552,7 +552,7 @@ id="menu-en-${agency_id}-FL"`;
                     },
                   }}
                 >
-                  {copiedCode === "integration_script"
+                  {copiedCode["integration_script"]
                     ? "¡Copiado!"
                     : "Copiar Script de Integración"}
                 </Button>
@@ -642,11 +642,11 @@ id="menu-en-${agency_id}-FL"`;
                         onClick={() => {
                           copyToClipboard(
                             `id="actividad-es-${activity.id}-FL"`,
-                            "activity_es"
+                            `activity_es_${activity.id}`
                           );
                         }}
                       >
-                        {copiedCode === "activity_es"
+                        {copiedCode[`activity_es_${activity.id}`]
                           ? "¡Copiado!"
                           : "COPIAR CÓDIGO DE INSERCIÓN"}
                         <ContentCopyIcon
@@ -665,11 +665,11 @@ id="menu-en-${agency_id}-FL"`;
                         onClick={() => {
                           copyToClipboard(
                             `id="actividad-en-${activity.id}-FL"`,
-                            "activity_en"
+                            `activity_en_${activity.id}`
                           );
                         }}
                       >
-                        {copiedCode === "activity_en"
+                        {copiedCode[`activity_en_${activity.id}`]
                           ? "¡Copiado!"
                           : "COPIAR CÓDIGO DE INSERCIÓN"}
                         <ContentCopyIcon
