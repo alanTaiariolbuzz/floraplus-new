@@ -454,6 +454,10 @@ export default function ReservaDataGrid({
       const codigoReserva = reserva.codigo_reserva?.toLowerCase() || "";
       const searchLower = search.toLowerCase();
 
+      // Normalizar códigos de reserva removiendo guiones para búsqueda
+      const codigoReservaNormalizado = codigoReserva.replace(/-/g, "");
+      const searchNormalizado = searchLower.replace(/-/g, "");
+
       // Filtrar por actividad seleccionada
       const actividadMatch =
         selectedActividad === "" ||
@@ -490,8 +494,9 @@ export default function ReservaDataGrid({
 
       // Lógica de búsqueda mejorada
       const searchMatch =
-        // Búsqueda por código de reserva
+        // Búsqueda por código de reserva (con y sin guiones)
         codigoReserva.includes(searchLower) ||
+        codigoReservaNormalizado.includes(searchNormalizado) ||
         // Búsqueda por nombre individual
         nombreCliente.includes(searchLower) ||
         // Búsqueda por apellido individual

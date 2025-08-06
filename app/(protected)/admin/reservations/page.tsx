@@ -296,20 +296,28 @@ export default function AdminReservations() {
         return false; // Ocultar reservas con estado "hold"
       }
 
-      // Filtro de búsqueda básica
+      // Filtro de búsqueda mejorada - solo por cliente o número de reserva
+      const searchLower = search.toLowerCase();
+      const nombreCliente = reserva?.cliente?.nombre?.toLowerCase() || "";
+      const apellidoCliente = reserva?.cliente?.apellido?.toLowerCase() || "";
+      const codigoReserva = reserva?.codigo_reserva?.toLowerCase() || "";
+
+      // Normalizar códigos de reserva removiendo guiones para búsqueda
+      const codigoReservaNormalizado = codigoReserva.replace(/-/g, "");
+      const searchNormalizado = searchLower.replace(/-/g, "");
+
       const searchMatch =
-        reserva?.cliente?.nombre
-          ?.toLowerCase()
-          .includes(search.toLowerCase()) ||
-        reserva?.cliente?.apellido
-          ?.toLowerCase()
-          .includes(search.toLowerCase()) ||
-        reserva?.cliente?.email?.toLowerCase().includes(search.toLowerCase()) ||
-        reserva?.agencia?.nombre
-          ?.toLowerCase()
-          .includes(search.toLowerCase()) ||
-        reserva?.estado?.toLowerCase().includes(search.toLowerCase()) ||
-        reserva?.id?.toString().includes(search);
+        // Búsqueda por código de reserva (con y sin guiones)
+        codigoReserva.includes(searchLower) ||
+        codigoReservaNormalizado.includes(searchNormalizado) ||
+        // Búsqueda por nombre individual
+        nombreCliente.includes(searchLower) ||
+        // Búsqueda por apellido individual
+        apellidoCliente.includes(searchLower) ||
+        // Búsqueda por nombre completo (nombre + apellido)
+        `${nombreCliente} ${apellidoCliente}`.includes(searchLower) ||
+        // Búsqueda por apellido + nombre
+        `${apellidoCliente} ${nombreCliente}`.includes(searchLower);
 
       // Filtro de fecha de compra
       const fechaCompraMatch =
@@ -559,7 +567,7 @@ export default function AdminReservations() {
                     }}
                   >
                     <TextField
-                      label="Buscar por cliente, tour operador, ID o actividad"
+                      label="Buscar por cliente o número de reserva"
                       variant="outlined"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
