@@ -11,6 +11,16 @@ export async function PATCH(
     const { id } = await params;
     const { status } = await req.json();
 
+    // Log detallado para rastrear llamadas de cancelación
+    console.log("🔍 PATCH /api/reservas/[id]/status llamado:", {
+      reservaId: id,
+      nuevoEstado: status,
+      userAgent: req.headers.get("user-agent"),
+      referer: req.headers.get("referer"),
+      timestamp: new Date().toISOString(),
+      headers: Object.fromEntries(req.headers.entries()),
+    });
+
     if (!id || !status) {
       return NextResponse.json(
         {
@@ -66,6 +76,14 @@ export async function PATCH(
 
     // Enviar email de cancelación si corresponde
     if (status === "cancelled" || status === "cancelada") {
+      console.log("🚨 ENVIANDO EMAIL DE CANCELACIÓN:", {
+        reservaId: id,
+        estado: status,
+        timestamp: new Date().toISOString(),
+        userAgent: req.headers.get("user-agent"),
+        referer: req.headers.get("referer"),
+      });
+
       try {
         // Detectar idioma (por ahora por defecto 'es', o usar 'en' si el email del cliente termina en .com)
         let lang = "es";
