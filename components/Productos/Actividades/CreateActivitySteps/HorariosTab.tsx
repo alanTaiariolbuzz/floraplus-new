@@ -485,17 +485,17 @@ const HorariosTab = ({
                     sx={{ mb: 2 }}
                   />
                 )}
+                {/* Descripción siempre visible debajo del toggle */}
+                <Typography
+                  variant="body2"
+                  sx={{ mb: 1, textAlign: "center" }}
+                >
+                  Define turnos con hora de inicio y fin, y asigna cuántos cupos hay para cada uno.
+                </Typography>
                 {formData.tipo_horario === "especifico" &&
                   cronograma.length === 0 &&
                   !showFields && (
                     <div className="flex flex-col gap-2 items-center justify-center bg-white p-8 rounded-[8px]">
-                      <Typography
-                        variant="body2"
-                        sx={{ mb: 1, textAlign: "center" }}
-                      >
-                        Define turnos con hora de inicio y fin, y asigna cuántos
-                        cupos hay para cada uno.
-                      </Typography>
                       <Button
                         onClick={handleAppearForm}
                         variant="contained"
@@ -708,18 +708,18 @@ const HorariosTab = ({
                     sx={{ mb: 2 }}
                   />
                 )}
+                {/* Descripción siempre visible debajo del toggle */}
+                <Typography
+                  variant="body2"
+                  sx={{ mb: 1, textAlign: "center" }}
+                >
+                  Los visitantes pueden llegar en cualquier momento entre una hora de apertura y de cierre.
+                </Typography>
 
                 {formData.tipo_horario === "rango" &&
                   cronograma.length === 0 &&
                   !showFieldsRango && (
                     <div className="flex flex-col gap-2 items-center justify-center bg-white p-8 rounded-[8px]">
-                      <Typography
-                        variant="body2"
-                        sx={{ mb: 1, textAlign: "center" }}
-                      >
-                        Los visitantes pueden llegar en cualquier momento entre
-                        una hora de apertura y de cierre.
-                      </Typography>
                       <Button
                         variant="contained"
                         onClick={handleAppearFormRango}

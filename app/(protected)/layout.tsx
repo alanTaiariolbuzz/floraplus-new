@@ -325,7 +325,8 @@ function ProtectedLayoutContent({ children }: { children: React.ReactNode }) {
     title: <></>,
     logo: (
       <div className="flex items-center h-full gap-2 justify-between w-[92vw]">
-        <div>{agency?.nombre_comercial || ""}</div>
+    
+        <div className="flex items-center gap-2"><img src="/images/flora-logo.svg"></img>{agency?.nombre_comercial || ""}</div>
         <div className="flex items-center gap-2">
           <AccountMenu user={user} />
         </div>

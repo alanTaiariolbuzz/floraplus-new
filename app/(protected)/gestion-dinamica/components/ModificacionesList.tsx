@@ -389,6 +389,8 @@ export const ModificacionesList: FC = () => {
         </Button>
       </div>
       {modificaciones.map((modificacion) => (
+
+    
         <div
           key={modificacion.id}
           className="w-full flex flex-col bg-white border border-[#E0E0E0] p-4 rounded-[8px]"

@@ -17,8 +17,12 @@ import {
 import { Logout } from "@mui/icons-material";
 import { createClient } from "@/utils/supabase/client";
 import { useUser } from "@/context/UserContext";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import SettingsIcon from "@mui/icons-material/Settings";
+import { useRouter } from "next/navigation";
 
 export default function AccountMenu({ user }: { user: any }) {
+  const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const supabase = createClient();
@@ -44,20 +48,11 @@ export default function AccountMenu({ user }: { user: any }) {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
-      <Tooltip title="Menú de usuario">
-        <IconButton
-          onClick={handleClick}
-          size="small"
-          sx={{
-            ml: 2,
-            "&:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-            },
-          }}
-          aria-controls={open ? "account-menu" : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? "true" : undefined}
-        >
+      <div
+        onClick={handleClick}
+        style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+      >
+        <Tooltip title="Menú de usuario">
           <Avatar
             sx={{
               width: 32,
@@ -68,15 +63,19 @@ export default function AccountMenu({ user }: { user: any }) {
           >
             {customUser?.nombre?.[0]?.toUpperCase() || "U"}
           </Avatar>
-        </IconButton>
-      </Tooltip>
-
+        </Tooltip>
+        <div className="flex flex-row items-center ml-3">
+          <Typography variant="body1" sx={{ color: "#202020" }}>
+            {customUser?.nombre} {customUser?.apellido}
+          </Typography>
+          <KeyboardArrowDownIcon style={{ marginLeft: 4 }} />
+        </div>
+      </div>
       <Menu
         anchorEl={anchorEl}
         id="account-menu"
         open={open}
         onClose={handleClose}
-        onClick={handleClose}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         PaperProps={{
@@ -113,12 +112,15 @@ export default function AccountMenu({ user }: { user: any }) {
             Cerrar Sesión
           </ListItemText>
         </MenuItem>
+        <MenuItem onClick={() => {handleClose; router.push("/configuracion")}}>
+          <ListItemIcon>
+            <SettingsIcon fontSize="small"/>
+          </ListItemIcon>
+          <ListItemText>
+            Configuración de cuenta
+          </ListItemText>
+        </MenuItem>
       </Menu>
-      <div className="flex flex-row items-center ml-3">
-        <Typography variant="body1" sx={{ color: "#202020" }}>
-          {customUser?.nombre} {customUser?.apellido}
-        </Typography>
-      </div>
     </Box>
   );
 }
