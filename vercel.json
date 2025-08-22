@@ -7,7 +7,7 @@
   "crons": [
     {
       "path": "/api/cron/move-abandoned-reservations",
-      "schedule": "*/2 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
