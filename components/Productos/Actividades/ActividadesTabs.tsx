@@ -304,6 +304,8 @@ const ActivityFormTabs = ({
       }
 
       const data = await response.json();
+      console.log("data en actividades")
+      console.log(data)
       const message =
         mode === "edit"
           ? "Actividad actualizada exitosamente"
@@ -354,13 +356,7 @@ const ActivityFormTabs = ({
 
   // Calcular índices de tabs dinámicamente según el modo
   const getTabIndex = (baseIndex: number) => {
-    if (mode === "edit") {
-      // En modo edit, saltamos los índices 1 y 2 (Horario y Tarifas)
-      if (baseIndex >= 3) {
-        return baseIndex - 2; // Ajustar índices para "Mas Detalles" y "adicionales"
-      }
-      return baseIndex;
-    }
+
     return baseIndex;
   };
 
@@ -375,15 +371,15 @@ const ActivityFormTabs = ({
           aria-label="Tabs de creación de actividad"
         >
           <Tab label="Información" />
-          {mode !== "edit" && <Tab label="Horario" />}
-          {mode !== "edit" && <Tab label="Tarifas" />}
+          <Tab label="Horario" />
+          <Tab label="Tarifas" />
           <Tab label="Mas Detalles" />
           <Tab label="adicionales" />
         </Tabs>
       </Paper>
 
       {/* Información */}
-      <TabPanel value={activeTab} index={0}>
+      <TabPanel value={activeTab} index={getTabIndex(0)}>
         <InformationTab
           titulo={activityData.titulo}
           titulo_en={activityData.titulo_en}
@@ -397,19 +393,18 @@ const ActivityFormTabs = ({
       </TabPanel>
 
       {/* Tabs solo para creación */}
-      {mode !== "edit" && (
+
         <>
-          <TabPanel value={activeTab} index={1}>
+          <TabPanel value={activeTab} index={getTabIndex(1)}>
             <HorariosTab
               cronograma={cronograma}
               onCronogramaChange={setCronograma}
             />
           </TabPanel>
-          <TabPanel value={activeTab} index={2}>
+          <TabPanel value={activeTab} index={getTabIndex(2)}>
             <TarifasTab tarifas={tarifas} onTarifasChange={setTarifas} />
           </TabPanel>
         </>
-      )}
 
       {/* Más Detalles */}
       <TabPanel value={activeTab} index={getTabIndex(3)}>
