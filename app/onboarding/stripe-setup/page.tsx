@@ -179,7 +179,7 @@ function StripeSetupContent() {
         setBusinessDetails((prev) => ({
           ...prev,
           businessName: data.nombre || "",
-          businessType: data.businessType || "individual",
+          businessType:    prev.businessType,
           email: data.email_contacto || "",
           phone: data.telefono || "",
           website: data.web || "",

@@ -8,10 +8,14 @@ import {
   saveStripeAccountToDB,
   updateStripeAccountInDB,
   getStripeAccountFromDB,
+  getagencyPrefillData
 } from "./db";
-import { getagencyPrefillData } from "@/utils/stripe/db";
+import { PrefillData } from "@/app/api/agencias/onboarding/invitar/controller";
+import { log } from "console";
+// import { getagencyPrefillData } from "@/utils/stripe/db";
 
-const safeIp = (ip?: string) => (ip && ip !== "127.0.0.1" ? ip : undefined);
+
+
 
 /**
  * Parsea una dirección completa en componentes para Stripe
@@ -110,11 +114,16 @@ export const getExistingAccountForAgency = async (
 export const createAccount = async (
   country: string,
   agencyId: number,
+  businessType: string,
   clientIp?: string,
   userAgent?: string
+
 ) => {
   // 1 – Stripe client listo
+  console.log("entro createAccount");
+  
   const stripeResult = stripeClient();
+
   if (!stripeResult.success) {
     const errorMessage = stripeResult.error || "Stripe client not initialized";
     logError({
@@ -126,7 +135,9 @@ export const createAccount = async (
     throw new Error(errorMessage);
   }
   const stripe = stripeResult.data;
-
+  console.log("stripe");
+  console.log(stripe);
+  
   // 2 – Verificar si ya existe una cuenta en la base de datos
   const { data: existingDBAccount } = await getStripeAccountFromDB(agencyId);
   if (existingDBAccount) {
@@ -170,7 +181,8 @@ export const createAccount = async (
   }
 
   // 4 – Datos de la agencia para pre-llenar
-  const { data: prefill } = await getagencyPrefillData(agencyId);
+  const { data } = await getagencyPrefillData(agencyId);
+  const prefill = data as PrefillData;
   if (!prefill) throw new Error("Agencia no encontrada");
 
   try {
@@ -178,10 +190,14 @@ export const createAccount = async (
      * 5 – Payload base (sin defaults). Vamos agregando secciones solo
      *     cuando exista información real en `prefill`.
      * ------------------------------------------------------------------*/
+    const safeIp = (ip?: string) => {
+      if (ip && ip !== "127.0.0.1") return ip;
+      return "8.8.8.8"; // IP de fallback para pruebas locales
+    };
     const userIp = safeIp(clientIp);
     const accountData: Stripe.AccountCreateParams = {
       country, // NO se pone valor por defecto
-      business_type: "company",
+      business_type: businessType as Stripe.AccountCreateParams.BusinessType,
       capabilities: { transfers: { requested: true } },
       controller: {
         stripe_dashboard: { type: "none" },
@@ -204,20 +220,20 @@ export const createAccount = async (
       tos_acceptance:
         country === "US"
           ? {
-              date: Math.floor(Date.now() / 1000),
-              ip: userIp,
-              user_agent: userAgent ?? "unknown",
-            }
+            date: Math.floor(Date.now() / 1000),
+            ip: userIp,
+            user_agent: userAgent ?? "unknown",
+          }
           : country === "CR"
             ? {
-                date: Math.floor(Date.now() / 1000),
-                ip: userIp,
-                service_agreement: "recipient",
-              }
+              date: Math.floor(Date.now() / 1000),
+              ip: userIp,
+              service_agreement: "recipient",
+            }
             : {
-                date: Math.floor(Date.now() / 1000),
-                ip: userIp,
-              },
+              date: Math.floor(Date.now() / 1000),
+              ip: userIp,
+            },
     };
 
     /* ---------- business_profile ---------- */
@@ -243,30 +259,42 @@ export const createAccount = async (
     if (prefill.email_contacto) {
       accountData.email = prefill.email_contacto;
     }
+    if (prefill.nombre || prefill.web || prefill.email_contacto || prefill.telefono) {
+      accountData.business_profile = {
+        ...(prefill.nombre && { name: prefill.nombre }),
+        ...(prefill.web && { url: prefill.web }),
+        ...(prefill.email_contacto && { support_email: prefill.email_contacto }),
+        ...(prefill.telefono && { support_phone: prefill.telefono }),
+      };
+    }
 
-    if (
-      prefill.nombre_comercial ||
-      prefill.telefono ||
-      prefill.cedula ||
-      prefill.direccion
-    ) {
-      accountData.company = {};
-      if (prefill.nombre_comercial)
-        accountData.company.name = prefill.nombre_comercial;
-      if (prefill.telefono) accountData.company.phone = prefill.telefono;
-      if (prefill.cedula) accountData.company.tax_id = String(prefill.cedula);
+    // Email principal de la cuenta
+    if (prefill.email_contacto) accountData.email = prefill.email_contacto;
 
-      // Configurar la dirección de la empresa
-      if (prefill.direccion) {
-        const addressParts = parseAddress(prefill.direccion);
-        accountData.company.address = {
-          line1: addressParts.line1,
-          city: addressParts.city,
-          state: addressParts.state,
-          postal_code: addressParts.postal_code,
-          country: prefill.pais || country,
-        };
-      }
+    // Diferenciar por tipo de cuenta
+    if (businessType === "individual") {
+      accountData.individual = {
+        ...(prefill.nombre_representante && {
+          first_name: prefill.nombre_representante.split(" ")[0],
+          last_name: prefill.nombre_representante.split(" ").slice(1).join(" "),
+        }),
+        ...(prefill.email_contacto && { email: prefill.email_contacto }),
+        ...(prefill.telefono && { phone: prefill.telefono }),
+        ...(prefill.dob_representante && {
+          dob: (() => {
+            const dob = new Date(prefill.dob_representante);
+            return { day: dob.getDate(), month: dob.getMonth() + 1, year: dob.getFullYear() };
+          })(),
+        }),
+        ...(prefill.direccion && { address: parseAddress(prefill.direccion) }),
+      };
+    } else {
+      accountData.company = {
+        ...(prefill.nombre_comercial && { name: prefill.nombre_comercial }),
+        ...(prefill.cedula && { tax_id: String(prefill.cedula) }),
+        ...(prefill.telefono && { phone: prefill.telefono }),
+        ...(prefill.direccion && { address: { ...parseAddress(prefill.direccion), country: prefill.pais || country } }),
+      };
     }
 
     // 6 – Crear la cuenta con idempotency key mejorado
@@ -292,6 +320,46 @@ export const createAccount = async (
     });
 
     await saveStripeAccountToDB(account, agencyId, country);
+    if ((businessType === "company" || businessType === "non_profit") && prefill.nombre_representante && prefill.dob_representante) {
+      try {
+        const dob = new Date(prefill.dob_representante);
+        const personData: Stripe.AccountCreatePersonParams = {
+          first_name: prefill.nombre_representante.split(" ")[0],
+          last_name: prefill.nombre_representante.split(" ").slice(1).join(" "),
+          dob: {
+            day: dob.getDate(),
+            month: dob.getMonth() + 1,
+            year: dob.getFullYear(),
+          },
+          // Asocia el representante con el negocio
+          relationship: {
+            owner: true,
+            director: true,
+            representative: true,
+          },
+          email: prefill.email_contacto,
+          phone: prefill.telefono,
+          // Puedes agregar otros campos como `address` si es necesario
+        };
+
+        await stripe.accounts.createPerson(account.id, personData);
+        logInfo("Objeto Person creado exitosamente para el representante", {
+          accountId: account.id,
+          representativeName: prefill.nombre_representante,
+        });
+
+      } catch (personError) {
+        logError(personError, {
+          context: "stripe-accounts-create-person",
+          accountId: account.id,
+          agencyId,
+          message: "Error al crear el objeto Person para el representante",
+        });
+        // Aquí podrías decidir si quieres lanzar un error o continuar.
+        // Lo ideal es notificar al usuario que se necesita completar la información.
+      }
+    }
+
     return account;
   } catch (err: any) {
     // Manejo específico para errores de idempotencia
@@ -367,9 +435,12 @@ export const updateAccount = async (
     if (data.business_type) {
       updateData.business_type = data.business_type;
     }
-
+ const safeIp = (ip?: string) => {
+      if (ip && ip !== "127.0.0.1") return ip;
+      return "8.8.8.8"; // IP de fallback para pruebas locales
+    };
     const userIp = safeIp(clientIp);
-
+   
     if (data.tos_acceptance) {
       // Asegurar que siempre usamos una IP válida
       if (!data.tos_acceptance.ip || data.tos_acceptance.ip === "127.0.0.1") {

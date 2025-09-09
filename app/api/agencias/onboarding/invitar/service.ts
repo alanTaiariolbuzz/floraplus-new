@@ -103,3 +103,45 @@ export const createAgencia = async ({
     return errorObj;
   }
 };
+export const updateAgencia = async ({
+  id,
+  stripe_account_id,
+}: {
+  id: string;
+  stripe_account_id: string;
+}) => {
+  const supabase = await createClient();
+  try {
+    const { data, error } = await supabase
+      .from("agencias")
+      .update({ stripe_account_id })
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (error) {
+      const errorObj = new Error(
+        `Error al actualizar la agencia con el ID de Stripe: ${error.message}`
+      );
+      logError(errorObj, {
+        context: "service:updateAgencia",
+      });
+      return errorObj;
+    }
+
+    logInfo(
+      `Agencia ${id} actualizada con ID de Stripe: ${stripe_account_id}`,
+      {
+        context: "service:updateAgencia",
+      }
+    );
+    return data;
+  } catch (error) {
+    const errorObj =
+      error instanceof Error ? error : new Error("Error desconocido");
+    logError(errorObj, {
+      context: "service:updateAgencia",
+    });
+    return errorObj;
+  }
+};
