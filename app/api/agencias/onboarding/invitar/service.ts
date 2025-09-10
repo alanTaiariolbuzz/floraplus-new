@@ -62,7 +62,7 @@ export const createAgencia = async ({
         direccion: agencia.direccion || "",
         termino_cond: terminosCondiciones,
         activa: false,
-        nombre_comercial: agencia.nombre_comercial || agencia.nombre_sociedad, // Usar nombre_sociedad como respaldo
+        nombre_comercial: agencia.nombre_comercial || agencia.nombre_sociedad, 
         cedula: agencia.cedula_juridica || null,
         pais: agencia.pais || null,
         web: agencia.sitio_web || null,
@@ -75,7 +75,8 @@ export const createAgencia = async ({
           configuracionFees.convenience_fee_variable_valor || null,
         tax: configuracionFees.tax || null,
         fee: condicionesComerciales.comision || 0,
-        nombre_representante: adminUser.nombre || null, // Nuevo campo opcional
+        nombre_representante: adminUser.nombre || null, 
+        dob_representante: adminUser.dob || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
