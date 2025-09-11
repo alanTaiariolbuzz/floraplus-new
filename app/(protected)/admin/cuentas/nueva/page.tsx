@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/app/(protected)/gestion-dinamica/nueva/components/ToastContext";
 
 
 import {
@@ -20,16 +22,13 @@ import {
 	MenuItem,
 	FormHelperText,
 } from "@mui/material";
-import { useRouter } from "next/navigation";
 import parsePhoneNumberFromString, {
 	parsePhoneNumber,
 	isValidPhoneNumber,
 } from "libphonenumber-js";
 import { matchIsValidTel, MuiTelInput } from "mui-tel-input";
-const simulateRouterPush = (path: string) => {
-	console.log(`Simulando navegación a: ${path}`);
-	alert('¡Formulario enviado con éxito!');
-};
+
+
 interface FormData {
 	agencia: {
 		nombre_sociedad: string;
@@ -97,7 +96,8 @@ const parseAddress = (direccion: string) => {
 };
 
 export default function CreateAccount() {
-	const router = useRouter();
+   	const router = useRouter();
+    const { showToast } = useToast();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [emailError, setEmailError] = useState<string>("");
@@ -331,6 +331,7 @@ export default function CreateAccount() {
 			const parsed = parseFloat(value);
 			return isNaN(parsed) ? null : parsed;
 		};
+
 		const dob = formData.usuario_administrador.dob;
 		const dobForStripe = dob
 		? `${dob.year.toString().padStart(4, "0")}-${dob.month
@@ -340,9 +341,6 @@ export default function CreateAccount() {
 
 		const isIndividual = formData.agencia.businessType === "individual";
 
-		console.log("isIndividual")  
-		console.log(isIndividual)
-		console.log("Datos que se envían al backend:", formData)
 		const dataToSend = {
 			...formData,
 			agencia: {
@@ -453,8 +451,6 @@ export default function CreateAccount() {
 						},
 				  },
 		};
-		console.log("dataToSend");
-		console.log(dataToSend);
 		
 		setLoading(true);
 		setError(null);
@@ -478,12 +474,14 @@ export default function CreateAccount() {
 					errorData.error?.includes("ya ha sido registrado")
 				) {
 					setEmailError("Este email ya está registrado");
+					showToast("Este email ya está registrado");
 					return;
 				}
 				throw new Error("Error al crear la agencia");
 			}
 
-			simulateRouterPush("/admin/cuentas"); 
+			showToast("¡Cuenta creada satisfactoriamente!");
+			router.push('/admin/cuentas');
 		} catch (error) {
 			setError("Error al crear la agencia. Por favor, intente nuevamente.");
 		} finally {

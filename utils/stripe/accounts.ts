@@ -120,8 +120,6 @@ export const createAccount = async (
 
 ) => {
 	// 1 – Stripe client listo
-	console.log("entro createAccount");
-
 	const stripeResult = stripeClient();
 
 	if (!stripeResult.success) {
@@ -135,8 +133,6 @@ export const createAccount = async (
 		throw new Error(errorMessage);
 	}
 	const stripe = stripeResult.data;
-	console.log("stripe");
-	console.log(stripe);
 
 	// 2 – Verificar si ya existe una cuenta en la base de datos
 	const { data: existingDBAccount } = await getStripeAccountFromDB(agencyId);
@@ -186,132 +182,13 @@ export const createAccount = async (
 	if (!prefill) throw new Error("Agencia no encontrada");
 
 	try {
-		/** ------------------------------------------------------------------
-		 * 5 – Payload base (sin defaults). Vamos agregando secciones solo
-		 *     cuando exista información real en `prefill`.
-		 * ------------------------------------------------------------------*/
+
 		const safeIp = (ip?: string) => {
 			if (ip && ip !== "127.0.0.1") return ip;
 			return "8.8.8.8";
 		};
 		const userIp = safeIp(clientIp);
-		// const accountData: Stripe.AccountCreateParams = {
-		//   country, // NO se pone valor por defecto
-		//   business_type: businessType as Stripe.AccountCreateParams.BusinessType,
-		//   capabilities: { transfers: { requested: true } },
-		//   controller: {
-		//     stripe_dashboard: { type: "none" },
-		//     fees: {
-		//       payer: "application",
-		//     },
-		//     losses: { payments: "application" },
-		//     requirement_collection: "application",
-		//   },
-		//   metadata: { agency_id: String(agencyId) },
-		//   settings: {
-		//     payouts: {
-		//       schedule: {
-		//         interval: "weekly", // Cambiar de "daily" a "manual" por defecto
-		//         delay_days: 5,
-		//         weekly_anchor: "monday", // Requerido para intervalos semanales
-		//       },
-		//     },
-		//   },
-		//   tos_acceptance:
-		//     country === "US"
-		//       ? {
-		//         date: Math.floor(Date.now() / 1000),
-		//         ip: userIp,
-		//         user_agent: userAgent ?? "unknown",
-		//       }
-		//       : country === "CR"
-		//         ? {
-		//           date: Math.floor(Date.now() / 1000),
-		//           ip: userIp,
-		//           service_agreement: "recipient",
-		//         }
-		//         : {
-		//           date: Math.floor(Date.now() / 1000),
-		//           ip: userIp,
-		//         },
-		// };
 
-		// /* ---------- business_profile ---------- */
-		// if (
-		//   prefill.nombre ||
-		//   prefill.web ||
-		//   prefill.email_contacto ||
-		//   prefill.telefono
-		// ) {
-		//   accountData.business_profile = {};
-		//   if (prefill.nombre) {
-		//     accountData.business_profile.name = prefill.nombre;
-		//   }
-		//   if (prefill.web) accountData.business_profile.url = prefill.web;
-		//   if (prefill.email_contacto) {
-		//     accountData.business_profile.support_email = prefill.email_contacto;
-		//   }
-		//   if (prefill.telefono) {
-		//     accountData.business_profile.support_phone = prefill.telefono;
-		//   }
-		// }
-
-		// if (prefill.email_contacto) {
-		//   accountData.email = prefill.email_contacto;
-		// }
-		// if (prefill.nombre || prefill.web || prefill.email_contacto || prefill.telefono) {
-		//   accountData.business_profile = {
-		//     ...(prefill.nombre && { name: prefill.nombre }),
-		//     ...(prefill.web && { url: prefill.web }),
-		//     ...(prefill.email_contacto && { support_email: prefill.email_contacto }),
-		//     ...(prefill.telefono && { support_phone: prefill.telefono }),
-		//   };
-		// }
-
-		// // Email principal de la cuenta
-		// if (prefill.email_contacto) accountData.email = prefill.email_contacto;
-
-		// // Diferenciar por tipo de cuenta
-		// if (businessType === "individual") {
-		//   accountData.individual = {
-		//     ...(prefill.nombre_representante && {
-		//       first_name: prefill.nombre_representante.split(" ")[0],
-		//       last_name: prefill.nombre_representante.split(" ").slice(1).join(" "),
-		//     }),
-		//     ...(prefill.email_contacto && { email: prefill.email_contacto }),
-		//     ...(prefill.telefono && { phone: prefill.telefono }),
-		//     ...(prefill.dob_representante && {
-		//       dob: (() => {
-		//         const dob = new Date(prefill.dob_representante);
-		//         return { day: dob.getDate(), month: dob.getMonth() + 1, year: dob.getFullYear() };
-		//       })(),
-		//     }),
-		//     ...(prefill.direccion && { address: parseAddress(prefill.direccion) }),
-		//   };
-		// } else {
-		//   accountData.company = {
-		//     ...(prefill.nombre_comercial && { name: prefill.nombre_comercial }),
-		//     ...(prefill.cedula && { tax_id: String(prefill.cedula) }),
-		//     ...(prefill.telefono && { phone: prefill.telefono }),
-		//     ...(prefill.direccion && { address: { ...parseAddress(prefill.direccion), country: prefill.pais || country } }),
-		//       representative: {
-		//   ...(prefill.nombre_representante && {
-		//     first_name: prefill.nombre_representante.split(" ")[0],
-		//     last_name: prefill.nombre_representante.split(" ").slice(1).join(" "),
-		//   }),
-		//   ...(prefill.email_contacto && { email: prefill.email_contacto }),
-		//   ...(prefill.telefono && { phone: prefill.telefono }),
-		//   ...(prefill.dob_representante && {
-		//     dob: (() => {
-		//       const dob = new Date(prefill.dob_representante);
-		//       return { day: dob.getDate(), month: dob.getMonth() + 1, year: dob.getFullYear() };
-		//     })(),
-		//   }),
-		//   ...(prefill.direccion && { address: parseAddress(prefill.direccion) }),
-		// },
-		//   };
-
-		// }
 		let accountData: Stripe.AccountCreateParams;
 
 		if (businessType === "individual") {
