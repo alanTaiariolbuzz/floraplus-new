@@ -344,59 +344,114 @@ export default function CreateAccount() {
 		console.log(isIndividual)
 		console.log("Datos que se envían al backend:", formData)
 		const dataToSend = {
-		...formData,
-		agencia: {
-			...formData.agencia,
-			direccion: direccionCompleta,
-			nombre_sociedad: formData.agencia.businessType === 'individual' ? formData.usuario_administrador.nombre : formData.agencia.nombre_sociedad,
-			dob_representante: dob,
-		},
-		condiciones_comerciales: {
-			...formData.condiciones_comerciales,
-			comision: parseNumericString(formData.condiciones_comerciales.comision),
-		},
-		configuracion_fees: {
-			...formData.configuracion_fees,
-			tax: parseNumericString(formData.configuracion_fees.tax),
-			convenience_fee_fijo_valor: parseNumericString(
-			formData.configuracion_fees.convenience_fee_fijo_valor
-			),
-			convenience_fee_variable_valor: parseNumericString(
-			formData.configuracion_fees.convenience_fee_variable_valor
-			),
-		},
-		usuario_administrador: {
-			...formData.usuario_administrador,
-			dob: dobForStripe,
-			telefono: formattedNumber,
-		},
-		stripeData: isIndividual
-			? {
-				individual: {
-				first_name: formData.usuario_administrador.nombre.split(" ")[0],
-				last_name: formData.usuario_administrador.nombre.split(" ")[1] || "",
+			...formData,
+			agencia: {
+				...formData.agencia,
+				direccion: direccionCompleta,
+				nombre_sociedad: formData.agencia.businessType === 'individual' ? formData.usuario_administrador.nombre : formData.agencia.nombre_sociedad,
+				dob_representante: dob,
+			},
+			condiciones_comerciales: {
+				...formData.condiciones_comerciales,
+				comision: parseNumericString(formData.condiciones_comerciales.comision),
+			},
+			configuracion_fees: {
+				...formData.configuracion_fees,
+				tax: parseNumericString(formData.configuracion_fees.tax),
+				convenience_fee_fijo_valor: parseNumericString(
+				formData.configuracion_fees.convenience_fee_fijo_valor
+				),
+				convenience_fee_variable_valor: parseNumericString(
+				formData.configuracion_fees.convenience_fee_variable_valor
+				),
+			},
+			usuario_administrador: {
+				...formData.usuario_administrador,
 				dob: dobForStripe,
-				email: formData.usuario_administrador.mail,
-				phone: formattedNumber,
-				address: {
-					line1: formData.agencia.direccion_line1,
-					city: formData.agencia.direccion_city,
-					state: formData.agencia.direccion_state,
-					postal_code: formData.agencia.direccion_postal_code,
-					country: formData.agencia.pais,
-				},
-				},
-				business_profile: {
-				url: formData.agencia.sitio_web,
-				product_description: formData.agencia.nombre_comercial,
-				},
-				settings: {
-				payments: {
-					statement_descriptor: formData.agencia.nombre_comercial,
-				},
-				},
-			}
-			: undefined,
+				telefono: formattedNumber,
+			},
+			// stripeData: isIndividual
+			// 	? {
+			// 		individual: {
+			// 		first_name: formData.usuario_administrador.nombre.split(" ")[0],
+			// 		last_name: formData.usuario_administrador.nombre.split(" ")[1] || "",
+			// 		dob: dobForStripe,
+			// 		email: formData.usuario_administrador.mail,
+			// 		phone: formattedNumber,
+			// 		address: {
+			// 			line1: formData.agencia.direccion_line1,
+			// 			city: formData.agencia.direccion_city,
+			// 			state: formData.agencia.direccion_state,
+			// 			postal_code: formData.agencia.direccion_postal_code,
+			// 			country: formData.agencia.pais,
+			// 		},
+			// 		},
+			// 		business_profile: {
+			// 		url: formData.agencia.sitio_web,
+			// 		product_description: formData.agencia.nombre_comercial,
+			// 		},
+			// 		settings: {
+			// 		payments: {
+			// 			statement_descriptor: formData.agencia.nombre_comercial,
+			// 		},
+			// 		},
+			// 	}
+			// 	: undefined,
+			stripeData: isIndividual
+				? {
+						individual: {
+							first_name: formData.usuario_administrador.nombre.split(" ")[0],
+							last_name: formData.usuario_administrador.nombre.split(" ")[1] || "",
+							dob: dobForStripe,
+							email: formData.usuario_administrador.mail,
+							phone: formattedNumber,
+							address: {
+								line1: formData.agencia.direccion_line1,
+								city: formData.agencia.direccion_city,
+								state: formData.agencia.direccion_state,
+								postal_code: formData.agencia.direccion_postal_code,
+								country: formData.agencia.pais,
+							},
+						},
+						business_profile: {
+							url: formData.agencia.sitio_web,
+							product_description: formData.agencia.nombre_comercial,
+						},
+						settings: {
+							payments: {
+								statement_descriptor: formData.agencia.nombre_comercial,
+							},
+						},
+				  }
+				: {
+						business_profile: {
+							url: formData.agencia.sitio_web,
+							product_description: formData.agencia.nombre_comercial,
+						},
+						settings: {
+							payments: {
+								statement_descriptor: formData.agencia.nombre_comercial,
+							},
+						},
+						company: {
+							name: formData.agencia.nombre_sociedad,
+							tax_id: formData.agencia.cedula_juridica,
+						},
+						representative: {
+							first_name: formData.usuario_administrador.nombre.split(" ")[0],
+							last_name: formData.usuario_administrador.nombre.split(" ")[1] || "",
+							dob: dobForStripe,
+							email: formData.usuario_administrador.mail,
+							phone: formattedNumber,
+							address: {
+								line1: formData.agencia.direccion_line1,
+								city: formData.agencia.direccion_city,
+								state: formData.agencia.direccion_state,
+								postal_code: formData.agencia.direccion_postal_code,
+								country: formData.agencia.pais,
+							},
+						},
+				  },
 		};
 		console.log("dataToSend");
 		console.log(dataToSend);
@@ -690,34 +745,31 @@ export default function CreateAccount() {
 						<Typography variant="h6" sx={{ mt: 2 }}>
 							Información del Administrador
 						</Typography>
-						{formData.agencia.businessType === "individual" && (
-								<>
-								<TextField
-									label="Fecha de Nacimiento"
-									type="date"
-									InputLabelProps={{ shrink: true }}
-									value={
-											formData.usuario_administrador.dob
-												? `${formData.usuario_administrador.dob.year.toString().padStart(4,'0')}-${formData.usuario_administrador.dob.month.toString().padStart(2,'0')}-${formData.usuario_administrador.dob.day.toString().padStart(2,'0')}`
-												: ""
-											}
-											onChange={(e) => {
-											const [year, month, day] = e.target.value.split("-").map(Number);
-											setFormData((prev) => ({
-												...prev,
-												usuario_administrador: {
-												...prev.usuario_administrador!,
-												dob: { day, month, year },
-												},
-											}));
-											}}
+						<>
+						<TextField
+							label="Fecha de Nacimiento"
+							type="date"
+							InputLabelProps={{ shrink: true }}
+							value={
+									formData.usuario_administrador.dob
+										? `${formData.usuario_administrador.dob.year.toString().padStart(4,'0')}-${formData.usuario_administrador.dob.month.toString().padStart(2,'0')}-${formData.usuario_administrador.dob.day.toString().padStart(2,'0')}`
+										: ""
+									}
+									onChange={(e) => {
+									const [year, month, day] = e.target.value.split("-").map(Number);
+									setFormData((prev) => ({
+										...prev,
+										usuario_administrador: {
+										...prev.usuario_administrador!,
+										dob: { day, month, year },
+										},
+									}));
+									}}
 
-									required
-									fullWidth
-									/>
-								</>
-							
-						)}
+							required
+							fullWidth
+							/>
+						</>
 						<TextField
 							label="Nombre del Administrador"
 							value={formData.usuario_administrador.nombre}
