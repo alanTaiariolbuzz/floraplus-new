@@ -1,9 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3004 -H 0.0.0.0",
+    "dev": "next dev",
     "dev:sessions": "CHROME_PATH=$(which google-chrome || which chrome) && $CHROME_PATH --auto-open-devtools-for-tabs=true --new-window http://localhost:3000 -- --auto-select-tab=Application",
-    "start": "next start -p 3004 -H 0.0.0.0",
+    "start": "next start",
     "test": "jest",
     "test:watch": "jest --watch",
     "build:openapi": "tsx utils/scripts/build-openapi.ts",
