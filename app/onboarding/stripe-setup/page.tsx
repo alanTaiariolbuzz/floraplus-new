@@ -179,7 +179,7 @@ function StripeSetupContent() {
         setBusinessDetails((prev) => ({
           ...prev,
           businessName: data.nombre || "",
-          businessType: "company", // Valor por defecto
+          businessType:    prev.businessType,
           email: data.email_contacto || "",
           phone: data.telefono || "",
           website: data.web || "",
@@ -895,6 +895,23 @@ function StripeSetupContent() {
               }}
             />
           </div>
+          <div className="mb-4">
+            <Typography variant="body2" className="text-gray-600 mb-2">
+               Tipo de Cuenta
+              </Typography>
+               <select
+                  name="businessType" // Un nombre descriptivo para el input
+                  required
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  value={businessDetails.businessType} // Conectado al estado
+                  onChange={(e) =>
+                    setBusinessDetails({ ...businessDetails, businessType: e.target.value })
+                  }
+                >
+                  <option value="company">Empresa</option>
+                  <option value="individual">Persona Física</option>
+                </select>
+            </div>
 
           {/* Campos para la información de la cuenta bancaria */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-md space-y-4">

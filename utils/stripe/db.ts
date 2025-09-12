@@ -205,7 +205,7 @@ export const getagencyPrefillData = async (agencyId: number) => {
     const { data, error } = await supabase
       .from("agencias")
       .select(
-        "id, nombre, pais, email_contacto, telefono, direccion, web, nombre_comercial, cedula, fee"
+        "id, nombre, pais, email_contacto, telefono, direccion, web, nombre_comercial, cedula, fee, nombre_representante, dob_representante"
       )
       .eq("id", agencyId)
       .single();
@@ -232,6 +232,8 @@ export const getagencyPrefillData = async (agencyId: number) => {
         nombre_comercial: data.nombre_comercial,
         cedula: data.cedula,
         fee: data.fee,
+        nombre_representante: data.nombre_representante,
+        dob_representante: data.dob_representante,
       },
     };
   } catch (err: any) {

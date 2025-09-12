@@ -1,9 +1,24 @@
 import { inviteAgencyAdminUser } from "@/utils/auth/invite";
-import { createAgencia } from "./service";
+import { createAgencia, updateAgencia } from "./service";
 import { CreateNuevaAgenciaInput } from "./schema";
 import { logError, logInfo } from "@/utils/error/logger";
 import { createAdminClient } from "@/utils/supabase/admin";
-
+import { createAccount } from "@/utils/stripe/accounts";
+export type PrefillData = {
+  id: number;
+  nombre: string;
+  pais: string;
+  email_contacto: string;
+  telefono: string;
+  direccion: string;
+  web: string;
+  nombre_comercial?: string;
+  cedula?: string;
+  fee?: number;
+  nombre_representante?: string;
+  dob_representante?: string;
+  businessType?: string;
+}
 /**
  * Crea una nueva agencia, invitando al usuario administrador y configurando los datos iniciales
  * @param agenciaData Datos de la agencia a crear
@@ -86,19 +101,24 @@ export const createNuevaAgencia = async (
     }
 
     // //crea la cuenta de stripe
-    // const account = await createAccount(agencia);
-    // if (account instanceof Error) {
-    //     return account;
-    // }
+    const account = await createAccount(
+      agenciaData.agencia.pais ?? "CR",
+      agencia.id,
+      agenciaData.agencia.businessType
+    );
 
-    // //asigna la cuenta a la agencia
-    // const r2 = await updateAgencia({
-    //     id: agencia.id,
-    //     stripe_account_id: account.id
-    // });
-    // if (r2 instanceof Error) {
-    //     return r2;
-    // }
+if (account instanceof Error) {
+  return account;
+}
+
+// asigna la cuenta a la agencia
+const r2 = await updateAgencia({
+  id: agencia.id,
+  stripe_account_id: account.id,
+});
+if (r2 instanceof Error) {
+  return r2;
+}
 
     logInfo(`Agencia creada exitosamente: ${agencia.id}`, {
       context: "controller:createNuevaAgencia",

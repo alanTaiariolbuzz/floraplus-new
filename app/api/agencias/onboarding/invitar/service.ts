@@ -62,7 +62,7 @@ export const createAgencia = async ({
         direccion: agencia.direccion || "",
         termino_cond: terminosCondiciones,
         activa: false,
-        nombre_comercial: agencia.nombre_comercial || agencia.nombre_sociedad, // Usar nombre_sociedad como respaldo
+        nombre_comercial: agencia.nombre_comercial || agencia.nombre_sociedad, 
         cedula: agencia.cedula_juridica || null,
         pais: agencia.pais || null,
         web: agencia.sitio_web || null,
@@ -75,7 +75,8 @@ export const createAgencia = async ({
           configuracionFees.convenience_fee_variable_valor || null,
         tax: configuracionFees.tax || null,
         fee: condicionesComerciales.comision || 0,
-        nombre_representante: adminUser.nombre || null, // Nuevo campo opcional
+        nombre_representante: adminUser.nombre || null, 
+        dob_representante: adminUser.dob || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -99,6 +100,48 @@ export const createAgencia = async ({
       error instanceof Error ? error : new Error("Error desconocido");
     logError(errorObj, {
       context: "service:createAgencia",
+    });
+    return errorObj;
+  }
+};
+export const updateAgencia = async ({
+  id,
+  stripe_account_id,
+}: {
+  id: string;
+  stripe_account_id: string;
+}) => {
+  const supabase = await createClient();
+  try {
+    const { data, error } = await supabase
+      .from("agencias")
+      .update({ stripe_account_id })
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (error) {
+      const errorObj = new Error(
+        `Error al actualizar la agencia con el ID de Stripe: ${error.message}`
+      );
+      logError(errorObj, {
+        context: "service:updateAgencia",
+      });
+      return errorObj;
+    }
+
+    logInfo(
+      `Agencia ${id} actualizada con ID de Stripe: ${stripe_account_id}`,
+      {
+        context: "service:updateAgencia",
+      }
+    );
+    return data;
+  } catch (error) {
+    const errorObj =
+      error instanceof Error ? error : new Error("Error desconocido");
+    logError(errorObj, {
+      context: "service:updateAgencia",
     });
     return errorObj;
   }
