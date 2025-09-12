@@ -34,8 +34,11 @@ agenciaId: number,
   cronograma.forEach((h, idx) => {
     if (h.id && idSet.has(h.id)) throw new DuplicateIdError();
     if (h.id) idSet.add(h.id);
-
-    if (h.fecha_inicio < todayISO) throw new PastDateError();
+    const isNewOrEdited = !(h as any).id || (h as any)._updated;
+    if(isNewOrEdited) {
+      if (h.fecha_inicio < todayISO) throw new PastDateError();
+    }
+    
 
     if (!h.dia_completo && (!h.hora_inicio || !h.hora_fin))
       throw new TimeRangeError();

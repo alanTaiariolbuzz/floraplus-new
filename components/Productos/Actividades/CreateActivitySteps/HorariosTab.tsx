@@ -20,9 +20,10 @@ export interface Schedule {
   fecha_fin: string;
   dias: number[];
   hora_inicio: string;
-  hora_fin: string;
+  hora_fin: string | null;
   cupo: number;
   tipo_horario: "especifico" | "rango";
+  _updated?: boolean;
 }
 
 interface ScheduleTabProps {
@@ -62,7 +63,7 @@ const HorariosTab = ({
   );
   const [formData, setFormData] = useState({
     hora_inicio: "",
-    hora_fin: "",
+    hora_fin: "" ,
     cupo: "",
     dias: [] as number[],
     dia_completo: false,
@@ -225,18 +226,28 @@ const HorariosTab = ({
 
     // Si no hay errores, limpiar el mensaje de error
     setError("");
-
+    console.log("fecha_inicio");
+    
+    console.log(new Date().toISOString().split("T")[0]);
+    
     const newSchedule: Schedule = {
       dia_completo: formData.dia_completo,
       fecha_inicio: new Date().toISOString().split("T")[0],
       fecha_fin: new Date().toISOString().split("T")[0],
       dias: formData.dias,
       hora_inicio: formData.hora_inicio,
-      hora_fin: formData.tipo_horario === "rango" ? formData.hora_fin : "",
+      hora_fin: formData.hora_fin !== "" ? formData.hora_fin : null,
       cupo: Number(formData.cupo),
       tipo_horario: formData.tipo_horario as "especifico" | "rango",
+      _updated: editingIndex !== null,
     };
-
+    console.log("hora inicio")
+    console.log(formData.hora_inicio)
+    console.log(formData.hora_fin)
+    console.log(formData.tipo_horario)
+    console.log("newSchedule");
+    console.log(newSchedule);
+    
     if (editingIndex !== null) {
       const updatedCronograma = [...cronograma];
       updatedCronograma[editingIndex] = newSchedule;
@@ -290,17 +301,39 @@ const HorariosTab = ({
     onCronogramaChange(cronograma.filter((_, i) => i !== index));
   };
 
+  // const handleEdit = (index: number) => {
+  //   console.log(index)
+  //   setEditingIndex(index);
+  //   console.log(cronograma[index])
+  //   setFormData({
+  //     hora_inicio: cronograma[index].hora_inicio,
+  //     hora_fin: cronograma[index].hora_fin,
+  //     cupo: cronograma[index].cupo.toString(),
+  //     dias: cronograma[index].dias,
+  //     dia_completo: cronograma[index].dia_completo,
+  //     tipo_horario: cronograma[index].tipo_horario,
+  //   });
+  //   setShowForm(true);
+  // };
   const handleEdit = (index: number) => {
     setEditingIndex(index);
+	console.log(cronograma[index]);
     setFormData({
       hora_inicio: cronograma[index].hora_inicio,
-      hora_fin: cronograma[index].hora_fin,
+      hora_fin: cronograma[index].hora_fin || "",
       cupo: cronograma[index].cupo.toString(),
       dias: cronograma[index].dias,
       dia_completo: cronograma[index].dia_completo,
       tipo_horario: cronograma[index].tipo_horario,
     });
     setShowForm(true);
+    if (cronograma[index].tipo_horario === "especifico") {
+      setShowFields(true);
+      setShowFieldsRango(false);
+    } else {
+      setShowFields(false);
+      setShowFieldsRango(true);
+    }
   };
 
   // Funciones para limpiar errores específicos
@@ -418,7 +451,7 @@ const HorariosTab = ({
           }}
         >
           <Typography variant="h6" sx={{ mb: 3 }}>
-            {editingIndex !== null ? "Editar Horario" : "Agregar horarios"}
+            {editingIndex !== null ? "Editar Horario " : "Agregar horarios"}
           </Typography>
 
           {/* {error && (
@@ -437,7 +470,181 @@ const HorariosTab = ({
               {error}
             </Typography>
           )} */}
+          {editingIndex !== null && (
+            <Box
+              sx={{
+                border: "1px solid #e0e0e0",
+                borderRadius: 2,
+                p: 3,
+                mb: 3,
+                bgcolor: "#FFF3E0",
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 3 }}>
+                Editar Horario
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Hora de inicio
+                </Typography>
+                <TextField
+                  fullWidth
+                  required
+                  type="time"
+                  value={formData.hora_inicio}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      hora_inicio: e.target.value,
+                    }))
+                  }
+                  error={fieldErrors.hora_inicio}
+                  helperText={
+                    fieldErrors.hora_inicio ? "Hora de inicio es requerida" : ""
+                  }
+                  inputProps={{
+                    step: 300, // minutos de 5 en 5
+                  }}
+                />
+              </Box>
 
+              {/* Mostrar hora de fin solo si es tipo rango */}
+              {formData.hora_fin !== "" || formData.hora_fin !== null  && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Hora de fin
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    required
+                    type="time"
+                    value={formData.hora_fin}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        hora_fin: e.target.value,
+                      }))
+                    }
+                    error={fieldErrors.hora_fin}
+                    helperText={
+                      fieldErrors.hora_fin ? "Hora de fin es requerida para el rango" : ""
+                    }
+                    inputProps={{
+                      step: 300,
+                      min: formData.hora_inicio,
+                    }}
+                  />
+                </Box>
+              )}
+
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Capacidad
+                </Typography>
+                <TextField
+                  fullWidth
+                  required
+                  type="number"
+                  value={formData.cupo}
+                  onChange={(e) => handleCupoChange(e.target.value)}
+                  error={fieldErrors.cupo}
+                  helperText={
+                    fieldErrors.cupo
+                      ? "Capacidad debe ser un número positivo mayor a 0"
+                      : ""
+                  }
+                  inputProps={{
+                    min: 1,
+                    step: 1,
+                    pattern: "[0-9]*",
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        personas
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+
+              {/* Días */}
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Días
+                </Typography>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      color="primary"
+                      checked={formData.dia_completo}
+                      onChange={(e) => {
+                        toggleAllDays(e.target.checked);
+                        clearDiasError();
+                      }}
+                    />
+                  }
+                  label="Todos los días"
+                  sx={{ mb: 2 }}
+                />
+
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  {(Object.keys(daysMap) as DayKey[]).map((day) => (
+                    <Chip
+                      key={day}
+                      label={day}
+                      variant={
+                        formData.dias.includes(daysMap[day])
+                          ? "filled"
+                          : "outlined"
+                      }
+                      color="primary"
+                      onClick={() => {
+                        toggleDay(day);
+                        clearDiasError();
+                      }}
+                      sx={{
+                        "&.MuiChip-filled": {
+                          backgroundColor: "primary.main",
+                          opacity: 1,
+                        },
+                        "&.MuiChip-outlined": {
+                          borderColor: "primary.main",
+                          color: "primary.main",
+                        },
+                      }}
+                    />
+                  ))}
+                </Box>
+                {fieldErrors.dias && (
+                  <Typography
+                    variant="caption"
+                    color="error"
+                    sx={{ mt: 1, display: "block" }}
+                  >
+                    Debe seleccionar al menos un día
+                  </Typography>
+                )}
+              </Box>
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, pt: 2 }}>
+                <Button variant="outlined" onClick={handleCancel}>
+                  CANCELAR
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSaveSchedule}
+                  sx={{
+                    backgroundColor: "primary.main",
+                    "&:hover": { backgroundColor: "primary.dark" },
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Guardar cambios
+                </Button>
+              </Box>
+            </Box>
+          )}
           <Box
             sx={{
               display: "flex",

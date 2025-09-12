@@ -255,6 +255,7 @@ const ActivityFormTabs = ({
       // Construir payload solo con los campos editables en modo edición
       let payload: any;
       if (mode === "edit") {
+        console.log(activityData);
         payload = {
           titulo: activityData.titulo,
           titulo_en: activityData.titulo_en,
@@ -264,6 +265,7 @@ const ActivityFormTabs = ({
           imagen: imagenFinal,
           ...(detallesLimpios ? { detalles: detallesLimpios } : {}),
           adicionales: selectedAdicionales,
+          cronograma: activityData.cronograma,
         };
       } else {
         // Modo creación: enviar todo
